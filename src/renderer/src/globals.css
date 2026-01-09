@@ -180,7 +180,7 @@
   }
 
   .segmented-control-item {
-    @apply px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200;
+    @apply px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 flex items-center;
     color: hsl(var(--muted-foreground));
   }
 

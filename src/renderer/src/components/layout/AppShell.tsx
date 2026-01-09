@@ -20,10 +20,8 @@ export default function AppShell({ children, activeTab, onTabChange }: AppShellP
         <div className="titlebar-drag-region h-8 flex-shrink-0" />
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto">
-          <div className="mx-auto max-w-4xl px-8 py-8">
-            {children}
-          </div>
+        <main className="flex-1 overflow-auto px-6 py-6">
+          {children}
         </main>
       </div>
     </div>

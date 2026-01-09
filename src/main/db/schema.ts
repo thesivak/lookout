@@ -115,4 +115,110 @@ CREATE TABLE IF NOT EXISTS contributor_emails (
 );
 
 CREATE INDEX IF NOT EXISTS idx_contributor_emails_profile ON contributor_emails(profile_id);
+
+-- Commits table for persisting and categorizing commits
+CREATE TABLE IF NOT EXISTS commits (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hash TEXT NOT NULL,
+    repo_id INTEGER NOT NULL,
+    author_email TEXT NOT NULL,
+    author_name TEXT NOT NULL,
+    date TEXT NOT NULL,
+    message TEXT NOT NULL,
+    is_merge INTEGER DEFAULT 0,
+    additions INTEGER DEFAULT 0,
+    deletions INTEGER DEFAULT 0,
+    files_changed INTEGER DEFAULT 0,
+    files_list TEXT,
+    category TEXT DEFAULT 'other' CHECK(category IN ('feature', 'bugfix', 'refactor', 'test', 'docs', 'chore', 'merge', 'other')),
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(hash, repo_id),
+    FOREIGN KEY (repo_id) REFERENCES repositories(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_commits_date ON commits(date);
+CREATE INDEX IF NOT EXISTS idx_commits_category ON commits(category);
+CREATE INDEX IF NOT EXISTS idx_commits_author ON commits(author_email);
+CREATE INDEX IF NOT EXISTS idx_commits_repo ON commits(repo_id);
+
+-- Velocity snapshots for trend tracking
+CREATE TABLE IF NOT EXISTS velocity_snapshots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    profile_id INTEGER,
+    week_start TEXT NOT NULL,
+    commits INTEGER DEFAULT 0,
+    additions INTEGER DEFAULT 0,
+    deletions INTEGER DEFAULT 0,
+    files_changed INTEGER DEFAULT 0,
+    category_breakdown TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(profile_id, week_start),
+    FOREIGN KEY (profile_id) REFERENCES contributor_profiles(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_velocity_week ON velocity_snapshots(week_start);
+CREATE INDEX IF NOT EXISTS idx_velocity_profile ON velocity_snapshots(profile_id);
+
+-- GitHub Pull Requests
+CREATE TABLE IF NOT EXISTS github_pull_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    repo_id INTEGER NOT NULL,
+    pr_number INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    author TEXT NOT NULL,
+    author_avatar TEXT,
+    state TEXT NOT NULL CHECK(state IN ('open', 'closed', 'merged')),
+    labels TEXT,
+    linked_issues TEXT,
+    additions INTEGER DEFAULT 0,
+    deletions INTEGER DEFAULT 0,
+    changed_files INTEGER DEFAULT 0,
+    commits TEXT,
+    ci_status TEXT CHECK(ci_status IN ('success', 'failure', 'pending', NULL)),
+    created_at TEXT NOT NULL,
+    merged_at TEXT,
+    synced_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(repo_id, pr_number),
+    FOREIGN KEY (repo_id) REFERENCES repositories(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_github_prs_repo ON github_pull_requests(repo_id);
+CREATE INDEX IF NOT EXISTS idx_github_prs_state ON github_pull_requests(state);
+CREATE INDEX IF NOT EXISTS idx_github_prs_author ON github_pull_requests(author);
+
+-- GitHub Reviews
+CREATE TABLE IF NOT EXISTS github_reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    repo_id INTEGER NOT NULL,
+    pr_number INTEGER NOT NULL,
+    reviewer TEXT NOT NULL,
+    reviewer_avatar TEXT,
+    state TEXT NOT NULL CHECK(state IN ('approved', 'changes_requested', 'commented', 'dismissed')),
+    body TEXT,
+    submitted_at TEXT NOT NULL,
+    UNIQUE(repo_id, pr_number, reviewer, submitted_at),
+    FOREIGN KEY (repo_id) REFERENCES repositories(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_github_reviews_repo ON github_reviews(repo_id);
+CREATE INDEX IF NOT EXISTS idx_github_reviews_reviewer ON github_reviews(reviewer);
+
+-- GitHub Issues
+CREATE TABLE IF NOT EXISTS github_issues (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    repo_id INTEGER NOT NULL,
+    issue_number INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    state TEXT NOT NULL CHECK(state IN ('open', 'closed')),
+    labels TEXT,
+    author TEXT NOT NULL,
+    closed_at TEXT,
+    synced_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(repo_id, issue_number),
+    FOREIGN KEY (repo_id) REFERENCES repositories(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_github_issues_repo ON github_issues(repo_id);
+CREATE INDEX IF NOT EXISTS idx_github_issues_state ON github_issues(state);
 `

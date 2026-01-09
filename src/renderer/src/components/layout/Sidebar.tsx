@@ -34,16 +34,6 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps): JSX.E
       {/* Traffic light spacing */}
       <div className="titlebar-drag-region h-12 flex-shrink-0" />
 
-      {/* App branding */}
-      <div className="flex items-center gap-2.5 px-4 pb-5">
-        <div className="titlebar-no-drag flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-md">
-            <Sparkles className="h-4 w-4 text-white" />
-          </div>
-          <span className="text-[15px] font-semibold tracking-tight text-foreground">Lookout</span>
-        </div>
-      </div>
-
       {/* Navigation */}
       <nav className="flex-1 px-3 py-1">
         <div className="space-y-1">

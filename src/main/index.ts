@@ -5,6 +5,7 @@ import { initDatabase, getDb } from './services/database'
 import { registerIpcHandlers } from './ipc'
 import { createTray, destroyTray, updateTrayMenu } from './tray'
 import { startScheduler, stopScheduler } from './services/scheduler'
+import { setMainWindow, runBackgroundPregeneration } from './services/pregeneration'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -107,6 +108,18 @@ if (!gotTheLock) {
         ]
       },
       {
+        label: 'Edit',
+        submenu: [
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' },
+          { role: 'selectAll' }
+        ]
+      },
+      {
         label: 'View',
         submenu: [
           {
@@ -198,6 +211,14 @@ if (!gotTheLock) {
 
       // Start scheduler
       startScheduler(mainWindow)
+
+      // Set window reference for pre-generation
+      setMainWindow(mainWindow)
+
+      // Start background pre-generation (non-blocking)
+      runBackgroundPregeneration().catch((error) => {
+        console.error('Background pre-generation failed:', error)
+      })
     }
 
     // Handle auto-launch setting

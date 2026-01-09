@@ -58,6 +58,88 @@ export function initDatabase(): Database.Database {
 function runMigrations(database: Database.Database): void {
   // Migration: Convert excluded_contributors setting to contributor_profiles
   migrateExcludedContributors(database)
+
+  // Migration: Add GitHub-related columns
+  migrateGitHubColumns(database)
+
+  // Migration: Add category_breakdown to summaries
+  migrateSummaryCategories(database)
+}
+
+/**
+ * Add GitHub-related columns to repositories and contributor_profiles
+ */
+function migrateGitHubColumns(database: Database.Database): void {
+  const migrationKey = 'github_columns_migrated'
+  const migrationDone = database
+    .prepare('SELECT value FROM settings WHERE key = ?')
+    .get(migrationKey) as { value: string } | undefined
+
+  if (migrationDone) return
+
+  try {
+    // Add columns to repositories
+    const repoColumns = [
+      'ALTER TABLE repositories ADD COLUMN is_github INTEGER DEFAULT 0',
+      'ALTER TABLE repositories ADD COLUMN github_owner TEXT',
+      'ALTER TABLE repositories ADD COLUMN github_repo TEXT',
+      'ALTER TABLE repositories ADD COLUMN last_github_sync TEXT'
+    ]
+
+    for (const sql of repoColumns) {
+      try {
+        database.exec(sql)
+      } catch (e) {
+        // Column may already exist, ignore
+      }
+    }
+
+    // Add columns to contributor_profiles
+    const profileColumns = [
+      'ALTER TABLE contributor_profiles ADD COLUMN avatar_url TEXT',
+      'ALTER TABLE contributor_profiles ADD COLUMN github_username TEXT'
+    ]
+
+    for (const sql of profileColumns) {
+      try {
+        database.exec(sql)
+      } catch (e) {
+        // Column may already exist, ignore
+      }
+    }
+
+    database
+      .prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
+      .run(migrationKey, 'true')
+
+    console.log('GitHub columns migration completed')
+  } catch (e) {
+    console.error('Failed to migrate GitHub columns:', e)
+  }
+}
+
+/**
+ * Add category_breakdown column to summaries
+ */
+function migrateSummaryCategories(database: Database.Database): void {
+  const migrationKey = 'summary_categories_migrated'
+  const migrationDone = database
+    .prepare('SELECT value FROM settings WHERE key = ?')
+    .get(migrationKey) as { value: string } | undefined
+
+  if (migrationDone) return
+
+  try {
+    database.exec('ALTER TABLE summaries ADD COLUMN category_breakdown TEXT')
+  } catch (e) {
+    // Column may already exist, ignore
+  }
+
+  database
+    .prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
+    .run(migrationKey, 'true')
+
+  console.log('Summary categories migration completed')
 }
 
 /**

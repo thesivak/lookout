@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
-import { GitCommit, FolderGit2, FileText, TrendingUp, Sparkles, ArrowRight } from 'lucide-react'
+import QuickActions from '../components/QuickActions'
+import { GitCommit, FolderGit2, FileText, TrendingUp, Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useNavigation } from '../App'
 
 interface DashboardStats {
@@ -26,6 +27,7 @@ export default function Dashboard(): JSX.Element {
   const [activity, setActivity] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [gitUser, setGitUser] = useState<GitUser | null>(null)
+  const [todaySummary, setTodaySummary] = useState<Summary | null>(null)
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -41,6 +43,13 @@ export default function Dashboard(): JSX.Element {
       // Load recent summaries
       const summaries = await window.api.summaries.list('personal', 5)
       setRecentSummaries(summaries)
+
+      // Check for today's pre-generated summary
+      const today = format(new Date(), 'yyyy-MM-dd')
+      const todaySum = summaries.find(s =>
+        format(new Date(s.created_at), 'yyyy-MM-dd') === today
+      )
+      setTodaySummary(todaySum || null)
 
       // Calculate date range (last 7 days)
       const now = new Date()
@@ -228,6 +237,91 @@ export default function Dashboard(): JSX.Element {
             </div>
           </div>
         </Card>
+      </div>
+
+      {/* Today's Summary Ready + Quick Actions */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Today's Summary Card */}
+        {todaySummary ? (
+          <Card className="border-success/30 bg-success-subtle/20 p-5">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-success-subtle border border-success/30">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-[14px] font-semibold">Today's Summary Ready</h3>
+                  <span className="rounded-full bg-success/20 px-2 py-0.5 text-[10px] font-medium text-success">
+                    Generated
+                  </span>
+                </div>
+                <p className="mt-1 text-[12px] text-muted-foreground">
+                  {todaySummary.commit_count} commits from {format(new Date(todaySummary.date_from), 'MMM d')} - {format(new Date(todaySummary.date_to), 'MMM d')}
+                </p>
+                {/* Executive Overview */}
+                {todaySummary.content && (
+                  <div className="mt-3 rounded-lg bg-background/50 p-3 border border-border/50">
+                    <p className="text-[12px] text-foreground/80 line-clamp-5 leading-relaxed">
+                      {(() => {
+                        let text = todaySummary.content
+                        // Skip past Claude's preamble (starts with "I'll analyze..." or similar)
+                        const separatorIndex = text.indexOf('---')
+                        if (separatorIndex !== -1) {
+                          text = text.slice(separatorIndex + 3)
+                        }
+                        // Clean up markdown and formatting
+                        text = text
+                          .replace(/^#+ .+$/gm, '') // Remove markdown headers
+                          .replace(/\*\*/g, '') // Remove bold markers
+                          .replace(/---/g, '') // Remove remaining separators
+                          .replace(/- /g, '') // Remove list markers
+                          .replace(/\n+/g, ' ') // Replace newlines with spaces
+                          .replace(/\s+/g, ' ') // Normalize whitespace
+                          .trim()
+                        return text.slice(0, 400) + (text.length > 400 ? '...' : '')
+                      })()}
+                    </p>
+                  </div>
+                )}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => setActiveTab('history')}
+                >
+                  View Full Summary
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <Card className="border-dashed border-accent/30 bg-accent-subtle/10 p-5">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-subtle border border-accent/20">
+                <Sparkles className="h-5 w-5 text-accent" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-[14px] font-semibold">Generate Today's Summary</h3>
+                <p className="mt-1 text-[12px] text-muted-foreground">
+                  No summary for today yet. Use quick actions or generate manually.
+                </p>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => setActiveTab('my-work')}
+                >
+                  <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                  Generate Now
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Quick Actions */}
+        <QuickActions />
       </div>
 
       {/* Activity Graph */}

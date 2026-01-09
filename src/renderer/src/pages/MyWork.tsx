@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { format, subDays, subWeeks, subMonths, startOfDay, endOfDay } from 'date-fns'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import SummaryDisplay from '../components/SummaryDisplay'
 import { Calendar, Sparkles, Copy, Download, AlertCircle, Check } from 'lucide-react'
+import { getQuickActionConfig } from '../components/QuickActions'
 
 type DateRange = 'yesterday' | 'week' | 'month' | 'custom'
 type Template = 'technical' | 'manager-friendly' | 'casual-standup'
@@ -67,10 +68,60 @@ export default function MyWork(): JSX.Element {
   const [claudeInstalled, setClaudeInstalled] = useState<boolean | null>(null)
   const [copied, setCopied] = useState(false)
   const [gitUser, setGitUser] = useState<GitUser | null>(null)
+  const quickActionProcessed = useRef(false)
 
   useEffect(() => {
     window.api.summaries.checkClaude().then(setClaudeInstalled)
     window.api.git.getUser().then(setGitUser)
+  }, [])
+
+  // Check for quick action config and auto-generate
+  useEffect(() => {
+    if (quickActionProcessed.current) return
+
+    const config = getQuickActionConfig()
+    if (config && config.type === 'personal' && config.autoGenerate) {
+      quickActionProcessed.current = true
+
+      // Map quick action date range to our DateRange type
+      const dateRangeMap: Record<string, DateRange> = {
+        yesterday: 'yesterday',
+        today: 'yesterday', // fallback
+        week: 'week',
+        last_week: 'week'
+      }
+      const mappedDateRange = dateRangeMap[config.dateRange] || 'week'
+
+      // Map template
+      const templateMap: Record<string, Template> = {
+        technical: 'technical',
+        'manager-friendly': 'manager-friendly',
+        'casual-standup': 'casual-standup'
+      }
+      const mappedTemplate = templateMap[config.template] || 'technical'
+
+      // Set the config and trigger generation after a short delay
+      setDateRange(mappedDateRange)
+      setTemplate(mappedTemplate)
+
+      // Trigger generation after state updates
+      setTimeout(() => {
+        const range = getDateRange(mappedDateRange)
+        setGenerating(true)
+        setError(null)
+        setSummary(null)
+        setStreamingContent('')
+        setProgress({ message: 'Starting generation...' })
+
+        window.api.summaries.generate({
+          type: 'personal',
+          dateFrom: range.from.toISOString(),
+          dateTo: range.to.toISOString(),
+          template: mappedTemplate,
+          authorEmail: undefined // gitUser might not be loaded yet
+        })
+      }, 100)
+    }
   }, [])
 
   useEffect(() => {

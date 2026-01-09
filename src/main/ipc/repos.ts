@@ -2,6 +2,8 @@ import { ipcMain, dialog } from 'electron'
 import { getDatabase } from '../services/database'
 import { existsSync } from 'fs'
 import { basename, join } from 'path'
+import { execSync } from 'child_process'
+import { parseGitHubRemote } from '../services/github'
 
 export interface Repository {
   id: number
@@ -14,6 +16,40 @@ export interface Repository {
 
 function isGitRepository(path: string): boolean {
   return existsSync(join(path, '.git'))
+}
+
+/**
+ * Detect if a repository is a GitHub repo and extract owner/repo info
+ */
+function detectGitHubInfo(repoPath: string): { owner: string; repo: string } | null {
+  try {
+    const remoteUrl = execSync('git remote get-url origin', {
+      cwd: repoPath,
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe']
+    }).trim()
+
+    return parseGitHubRemote(remoteUrl)
+  } catch {
+    // Not a git repo or no origin remote
+    return null
+  }
+}
+
+/**
+ * Update repository with GitHub info if detected
+ */
+function updateGitHubInfo(repoId: number, repoPath: string): void {
+  const db = getDatabase()
+  const githubInfo = detectGitHubInfo(repoPath)
+
+  if (githubInfo) {
+    db.prepare(`
+      UPDATE repositories
+      SET is_github = 1, github_owner = ?, github_repo = ?
+      WHERE id = ?
+    `).run(githubInfo.owner, githubInfo.repo, repoId)
+  }
 }
 
 export function registerRepoHandlers(): void {
@@ -55,6 +91,10 @@ export function registerRepoHandlers(): void {
         'INSERT INTO repositories (path, name) VALUES (?, ?) RETURNING *'
       )
       const repo = stmt.get(path, name) as Repository
+
+      // Detect and store GitHub info
+      updateGitHubInfo(repo.id, path)
+
       return { ...repo, is_available: true }
     } catch (error: unknown) {
       if (error instanceof Error && error.message.includes('UNIQUE constraint')) {
@@ -78,6 +118,10 @@ export function registerRepoHandlers(): void {
         'INSERT INTO repositories (path, name) VALUES (?, ?) RETURNING *'
       )
       const repo = stmt.get(path, name) as Repository
+
+      // Detect and store GitHub info
+      updateGitHubInfo(repo.id, path)
+
       return { ...repo, is_available: true }
     } catch (error: unknown) {
       if (error instanceof Error && error.message.includes('UNIQUE constraint')) {

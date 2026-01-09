@@ -327,3 +327,214 @@ export async function getCommitActivityByDay(
 
   return activity
 }
+
+/**
+ * Get list of files changed in a commit
+ */
+export async function getCommitFiles(repoPath: string, hash: string): Promise<string[]> {
+  try {
+    const output = execSync(`git show --name-only --format="" ${hash}`, {
+      cwd: repoPath,
+      encoding: 'utf-8'
+    })
+
+    return output
+      .split('\n')
+      .map((f) => f.trim())
+      .filter((f) => f.length > 0)
+  } catch (error) {
+    console.error(`Failed to get files for commit ${hash}:`, error)
+    return []
+  }
+}
+
+export interface FileDiff {
+  path: string
+  status: 'added' | 'deleted' | 'modified' | 'renamed'
+  oldPath?: string
+  additions: number
+  deletions: number
+  hunks: Array<{
+    oldStart: number
+    oldLines: number
+    newStart: number
+    newLines: number
+    content: string
+  }>
+}
+
+export interface CommitDiff {
+  hash: string
+  message: string
+  author: string
+  date: string
+  files: FileDiff[]
+  stats: {
+    additions: number
+    deletions: number
+    filesChanged: number
+  }
+}
+
+/**
+ * Get full diff for a commit
+ */
+export async function getCommitDiff(repoPath: string, hash: string): Promise<CommitDiff> {
+  const git: SimpleGit = simpleGit(repoPath)
+
+  // Get commit info
+  const log = await git.log({ from: hash, to: hash, maxCount: 1 })
+  const commit = log.latest
+
+  if (!commit) {
+    throw new Error(`Commit ${hash} not found`)
+  }
+
+  // Get diff output
+  const diffOutput = execSync(`git show --format="" --patch ${hash}`, {
+    cwd: repoPath,
+    encoding: 'utf-8',
+    maxBuffer: 10 * 1024 * 1024 // 10MB buffer for large diffs
+  })
+
+  // Parse diff output
+  const files = parseDiff(diffOutput)
+
+  // Calculate stats
+  let totalAdditions = 0
+  let totalDeletions = 0
+
+  for (const file of files) {
+    totalAdditions += file.additions
+    totalDeletions += file.deletions
+  }
+
+  return {
+    hash: commit.hash,
+    message: commit.message,
+    author: commit.author_name,
+    date: commit.date,
+    files,
+    stats: {
+      additions: totalAdditions,
+      deletions: totalDeletions,
+      filesChanged: files.length
+    }
+  }
+}
+
+/**
+ * Parse git diff output into structured format
+ */
+function parseDiff(diffOutput: string): FileDiff[] {
+  const files: FileDiff[] = []
+  const lines = diffOutput.split('\n')
+
+  let currentFile: FileDiff | null = null
+  let currentHunk: { oldStart: number; oldLines: number; newStart: number; newLines: number; content: string } | null = null
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+
+    // New file diff starts
+    if (line.startsWith('diff --git')) {
+      // Save previous file
+      if (currentFile) {
+        if (currentHunk) {
+          currentFile.hunks.push(currentHunk)
+        }
+        files.push(currentFile)
+      }
+
+      // Extract file path
+      const match = line.match(/diff --git a\/(.*) b\/(.*)/)
+      if (match) {
+        const oldPath = match[1]
+        const newPath = match[2]
+
+        currentFile = {
+          path: newPath,
+          status: 'modified',
+          additions: 0,
+          deletions: 0,
+          hunks: []
+        }
+
+        if (oldPath !== newPath) {
+          currentFile.status = 'renamed'
+          currentFile.oldPath = oldPath
+        }
+      }
+
+      currentHunk = null
+      continue
+    }
+
+    if (!currentFile) continue
+
+    // File status
+    if (line.startsWith('new file')) {
+      currentFile.status = 'added'
+    } else if (line.startsWith('deleted file')) {
+      currentFile.status = 'deleted'
+    }
+
+    // Hunk header
+    if (line.startsWith('@@')) {
+      // Save previous hunk
+      if (currentHunk) {
+        currentFile.hunks.push(currentHunk)
+      }
+
+      const hunkMatch = line.match(/@@ -(\d+),?(\d*) \+(\d+),?(\d*) @@/)
+      if (hunkMatch) {
+        currentHunk = {
+          oldStart: parseInt(hunkMatch[1]),
+          oldLines: hunkMatch[2] ? parseInt(hunkMatch[2]) : 1,
+          newStart: parseInt(hunkMatch[3]),
+          newLines: hunkMatch[4] ? parseInt(hunkMatch[4]) : 1,
+          content: line + '\n'
+        }
+      }
+      continue
+    }
+
+    // Diff content
+    if (currentHunk) {
+      currentHunk.content += line + '\n'
+
+      if (line.startsWith('+') && !line.startsWith('+++')) {
+        currentFile.additions++
+      } else if (line.startsWith('-') && !line.startsWith('---')) {
+        currentFile.deletions++
+      }
+    }
+  }
+
+  // Save last file
+  if (currentFile) {
+    if (currentHunk) {
+      currentFile.hunks.push(currentHunk)
+    }
+    files.push(currentFile)
+  }
+
+  return files
+}
+
+/**
+ * Get diff between two commits
+ */
+export async function getDiffBetween(
+  repoPath: string,
+  fromHash: string,
+  toHash: string
+): Promise<FileDiff[]> {
+  const diffOutput = execSync(`git diff ${fromHash}..${toHash}`, {
+    cwd: repoPath,
+    encoding: 'utf-8',
+    maxBuffer: 10 * 1024 * 1024
+  })
+
+  return parseDiff(diffOutput)
+}

@@ -7,10 +7,14 @@ import {
   fetchAll,
   getRepoStats,
   getCommitActivityByDay,
+  getCommitDiff,
+  getDiffBetween,
   CommitData,
   AuthorData,
   RepoStats,
-  GitUser
+  GitUser,
+  CommitDiff,
+  FileDiff
 } from '../services/git'
 import { getDatabase } from '../services/database'
 
@@ -273,6 +277,39 @@ export function registerGitHandlers(): void {
       )
 
       return Object.fromEntries(aggregated)
+    }
+  )
+
+  // Get diff for a specific commit
+  ipcMain.handle(
+    'git:get-diff',
+    async (_, repoPath: string, hash: string): Promise<{ success: boolean; diff?: CommitDiff; error?: string }> => {
+      try {
+        const diff = await getCommitDiff(repoPath, hash)
+        return { success: true, diff }
+      } catch (error) {
+        console.error('Failed to get diff:', error)
+        return { success: false, error: String(error) }
+      }
+    }
+  )
+
+  // Get diff between two commits
+  ipcMain.handle(
+    'git:get-diff-between',
+    async (
+      _,
+      repoPath: string,
+      fromHash: string,
+      toHash: string
+    ): Promise<{ success: boolean; files?: FileDiff[]; error?: string }> => {
+      try {
+        const files = await getDiffBetween(repoPath, fromHash, toHash)
+        return { success: true, files }
+      } catch (error) {
+        console.error('Failed to get diff between commits:', error)
+        return { success: false, error: String(error) }
+      }
     }
   )
 }
