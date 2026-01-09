@@ -87,7 +87,7 @@ export default function Dashboard(): JSX.Element {
     loadDashboard()
   }, [loadDashboard])
 
-  // Contribution graph component
+  // Contribution graph component with amber accent
   const ContributionGraph = () => {
     const weeks = 52
     const days = 7
@@ -113,12 +113,13 @@ export default function Dashboard(): JSX.Element {
       return 4
     }
 
+    // Amber-based colors for the contribution graph
     const levelColors = [
-      'bg-muted/50',
-      'bg-accent/25',
-      'bg-accent/45',
-      'bg-accent/70',
-      'bg-accent'
+      'bg-muted/40',
+      'bg-amber-900/40',
+      'bg-amber-700/60',
+      'bg-amber-500/80',
+      'bg-amber-400'
     ]
 
     return (
@@ -129,7 +130,7 @@ export default function Dashboard(): JSX.Element {
               {week.map((day, di) => (
                 <div
                   key={di}
-                  className={`h-[11px] w-[11px] rounded-[3px] ${levelColors[getLevel(day.count)]} transition-colors`}
+                  className={`h-[11px] w-[11px] rounded-sm ${levelColors[getLevel(day.count)]} transition-all hover:ring-1 hover:ring-accent/50`}
                   title={`${day.date}: ${day.count} commits`}
                 />
               ))}
@@ -139,7 +140,7 @@ export default function Dashboard(): JSX.Element {
         <div className="mt-3 flex items-center justify-end gap-1.5 text-[11px] text-muted-foreground">
           <span>Less</span>
           {levelColors.map((color, i) => (
-            <div key={i} className={`h-[11px] w-[11px] rounded-[3px] ${color}`} />
+            <div key={i} className={`h-[11px] w-[11px] rounded-sm ${color}`} />
           ))}
           <span>More</span>
         </div>
@@ -150,9 +151,9 @@ export default function Dashboard(): JSX.Element {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-          <span className="text-[13px]">Loading...</span>
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+          <span className="text-[13px]">Loading dashboard...</span>
         </div>
       </div>
     )
@@ -163,8 +164,8 @@ export default function Dashboard(): JSX.Element {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-tight">Dashboard</h1>
-          <p className="mt-0.5 text-[13px] text-muted-foreground">
+          <h1 className="text-[24px] font-bold tracking-tight">Dashboard</h1>
+          <p className="mt-1 text-[14px] text-muted-foreground">
             {gitUser ? `Welcome back, ${gitUser.name}` : 'Overview of your Git activity'}
           </p>
         </div>
@@ -174,71 +175,73 @@ export default function Dashboard(): JSX.Element {
         </Button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - with better visual hierarchy */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-subtle">
+        <Card className="group p-5 transition-all hover:border-accent/30 hover:shadow-glow-accent">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-subtle border border-accent/20">
               <FolderGit2 className="h-5 w-5 text-accent" />
             </div>
             <div>
-              <p className="text-[22px] font-semibold tracking-tight">{stats.totalRepos}</p>
-              <p className="text-[12px] text-muted-foreground">Repositories</p>
+              <p className="text-[28px] font-bold tracking-tight">{stats.totalRepos}</p>
+              <p className="text-[12px] font-medium text-muted-foreground">Repositories</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success-subtle">
+        <Card className="group p-5 transition-all hover:border-success/30">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success-subtle border border-success/20">
               <GitCommit className="h-5 w-5 text-success" />
             </div>
             <div>
-              <p className="text-[22px] font-semibold tracking-tight">{stats.weeklyCommits}</p>
-              <p className="text-[12px] text-muted-foreground">Commits (7d)</p>
+              <p className="text-[28px] font-bold tracking-tight">{stats.weeklyCommits}</p>
+              <p className="text-[12px] font-medium text-muted-foreground">Commits (7d)</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-subtle">
+        <Card className="group p-5 transition-all hover:border-accent/30 hover:shadow-glow-accent">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-subtle border border-accent/20">
               <FileText className="h-5 w-5 text-accent" />
             </div>
             <div>
-              <p className="text-[22px] font-semibold tracking-tight">{stats.totalSummaries}</p>
-              <p className="text-[12px] text-muted-foreground">Summaries</p>
+              <p className="text-[28px] font-bold tracking-tight">{stats.totalSummaries}</p>
+              <p className="text-[12px] font-medium text-muted-foreground">Summaries</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+        <Card className="group p-5">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted border border-border-subtle">
               <TrendingUp className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-[22px] font-semibold tracking-tight">
+              <p className="text-[24px] font-bold tracking-tight">
                 <span className="text-success">+{stats.weeklyAdditions}</span>
-                <span className="mx-0.5 text-muted-foreground">/</span>
+                <span className="mx-1 text-muted-foreground/50">/</span>
                 <span className="text-destructive">-{stats.weeklyDeletions}</span>
               </p>
-              <p className="text-[12px] text-muted-foreground">Lines (7d)</p>
+              <p className="text-[12px] font-medium text-muted-foreground">Lines (7d)</p>
             </div>
           </div>
         </Card>
       </div>
 
       {/* Activity Graph */}
-      <Card className="p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold">Activity</h2>
-          <span className="text-[12px] text-muted-foreground">Last 12 months</span>
+      <Card className="p-6">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-[16px] font-semibold">Activity</h2>
+          <span className="rounded-lg bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+            Last 12 months
+          </span>
         </div>
         {Object.keys(activity).length > 0 ? (
           <ContributionGraph />
         ) : (
-          <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-border">
+          <div className="flex h-28 items-center justify-center rounded-xl border border-dashed border-border bg-background-secondary/50">
             <p className="text-[13px] text-muted-foreground">
               {stats.totalRepos === 0
                 ? 'Add repositories to see your activity'
@@ -249,16 +252,16 @@ export default function Dashboard(): JSX.Element {
       </Card>
 
       {/* Recent Summaries */}
-      <Card className="p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-[15px] font-semibold">Recent Summaries</h2>
+      <Card className="p-6">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-[16px] font-semibold">Recent Summaries</h2>
           {recentSummaries.length > 0 && (
             <button
               onClick={() => setActiveTab('history')}
-              className="flex items-center gap-1 text-[12px] text-accent hover:underline"
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-medium text-accent transition-colors hover:bg-accent-subtle"
             >
               View all
-              <ArrowRight className="h-3 w-3" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
@@ -268,10 +271,10 @@ export default function Dashboard(): JSX.Element {
               <button
                 key={summary.id}
                 onClick={() => setActiveTab('history')}
-                className="flex w-full items-center justify-between rounded-lg border border-border/60 bg-card p-3 text-left transition-all hover:border-border hover:shadow-subtle"
+                className="flex w-full items-center justify-between rounded-xl border border-border-subtle bg-background-secondary p-4 text-left transition-all hover:border-border hover:bg-card"
               >
                 <div>
-                  <p className="text-[13px] font-medium">
+                  <p className="text-[14px] font-medium">
                     {format(new Date(summary.date_from), 'MMM d')} -{' '}
                     {format(new Date(summary.date_to), 'MMM d, yyyy')}
                   </p>
@@ -279,20 +282,22 @@ export default function Dashboard(): JSX.Element {
                     {summary.commit_count} commits
                   </p>
                 </div>
-                <span className="rounded-md bg-muted px-2 py-1 text-[11px] text-muted-foreground">
+                <span className="rounded-lg bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground border border-border-subtle">
                   {summary.prompt_template}
                 </span>
               </button>
             ))}
           </div>
         ) : (
-          <div className="flex h-32 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border">
-            <Sparkles className="h-6 w-6 text-muted-foreground" />
+          <div className="flex h-36 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-background-secondary/50">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-subtle border border-accent/20">
+              <Sparkles className="h-5 w-5 text-accent" />
+            </div>
             <div className="text-center">
-              <p className="text-[13px] text-muted-foreground">No summaries yet</p>
+              <p className="text-[13px] font-medium text-muted-foreground">No summaries yet</p>
               <button
                 onClick={() => setActiveTab('my-work')}
-                className="mt-1 text-[12px] text-accent hover:underline"
+                className="mt-1 text-[12px] font-medium text-accent hover:underline"
               >
                 Generate your first summary
               </button>

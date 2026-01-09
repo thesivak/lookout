@@ -4,98 +4,74 @@
 
 @layer base {
   :root {
-    /* macOS Native Light Theme */
-    --background: 0 0% 96%;
-    --background-secondary: 0 0% 100%;
-    --foreground: 0 0% 11%;
+    /* "Elevated Dark" Theme - Rich contrast with warm accents */
 
-    --sidebar: 0 0% 95%;
-    --sidebar-foreground: 0 0% 25%;
-    --sidebar-accent: 214 100% 50%;
+    /* Core backgrounds - true dark with clear hierarchy */
+    --background: 240 6% 7%;           /* Deep charcoal #111113 */
+    --background-secondary: 240 5% 10%; /* Slightly elevated #18181b */
+    --foreground: 0 0% 98%;             /* Almost white */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 11%;
-    --card-hover: 0 0% 98%;
+    /* Sidebar - distinct darker zone */
+    --sidebar: 240 6% 5%;               /* Near black #0c0c0e */
+    --sidebar-foreground: 240 5% 65%;   /* Muted text */
+    --sidebar-accent: 35 100% 55%;      /* Warm amber */
 
-    --muted: 0 0% 91%;
-    --muted-foreground: 0 0% 45%;
+    /* Cards - the star of the show, clearly elevated */
+    --card: 240 4% 14%;                 /* Elevated surface #222226 */
+    --card-foreground: 0 0% 95%;
+    --card-hover: 240 4% 17%;           /* Hover state */
+    --card-border: 240 4% 22%;          /* Visible border */
 
-    --accent: 211 100% 50%;
-    --accent-foreground: 0 0% 100%;
-    --accent-subtle: 211 100% 96%;
+    /* Muted elements */
+    --muted: 240 4% 18%;
+    --muted-foreground: 240 5% 55%;
 
-    --border: 0 0% 88%;
-    --border-subtle: 0 0% 92%;
-    --input: 0 0% 100%;
-    --input-border: 0 0% 82%;
-    --ring: 211 100% 50%;
+    /* Accent - warm amber/gold for personality */
+    --accent: 35 100% 55%;              /* Vibrant amber #f59e0b */
+    --accent-foreground: 0 0% 5%;       /* Dark text on accent */
+    --accent-subtle: 35 100% 12%;       /* Subtle amber glow */
+    --accent-muted: 35 60% 45%;         /* Softer amber */
 
-    --destructive: 0 84% 60%;
+    /* Borders with proper visibility */
+    --border: 240 4% 20%;               /* Visible borders */
+    --border-subtle: 240 4% 16%;
+    --input: 240 4% 12%;
+    --input-border: 240 4% 25%;
+    --ring: 35 100% 55%;
+
+    /* Semantic colors - vibrant and clear */
+    --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-subtle: 0 84% 96%;
+    --destructive-subtle: 0 70% 15%;
 
-    --success: 142 71% 40%;
+    --success: 152 70% 45%;
     --success-foreground: 0 0% 100%;
-    --success-subtle: 142 71% 95%;
+    --success-subtle: 152 70% 12%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --warning-subtle: 38 92% 95%;
+    --warning: 38 95% 55%;
+    --warning-foreground: 0 0% 5%;
+    --warning-subtle: 38 80% 15%;
 
-    --radius: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
+    /* Radius - slightly more rounded for modern feel */
+    --radius: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
 
-    /* macOS-specific */
+    /* Layout */
     --titlebar-height: 52px;
     --sidebar-width: 220px;
-    --vibrancy: rgba(255, 255, 255, 0.72);
-    --vibrancy-border: rgba(0, 0, 0, 0.06);
-    --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
-    --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
-  }
 
-  /* Dark mode support */
-  .dark {
-    --background: 0 0% 12%;
-    --background-secondary: 0 0% 16%;
-    --foreground: 0 0% 98%;
+    /* Shadows - crucial for elevation */
+    --shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
 
-    --sidebar: 0 0% 14%;
-    --sidebar-foreground: 0 0% 75%;
-    --sidebar-accent: 211 100% 55%;
+    /* Card glow for interactive states */
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03);
+    --shadow-card-hover: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
 
-    --card: 0 0% 16%;
-    --card-foreground: 0 0% 98%;
-    --card-hover: 0 0% 18%;
-
-    --muted: 0 0% 22%;
-    --muted-foreground: 0 0% 55%;
-
-    --accent: 211 100% 55%;
-    --accent-foreground: 0 0% 100%;
-    --accent-subtle: 211 100% 15%;
-
-    --border: 0 0% 22%;
-    --border-subtle: 0 0% 18%;
-    --input: 0 0% 18%;
-    --input-border: 0 0% 28%;
-
-    --destructive: 0 72% 55%;
-    --destructive-subtle: 0 72% 15%;
-
-    --success: 142 65% 45%;
-    --success-subtle: 142 65% 15%;
-
-    --warning: 38 90% 55%;
-    --warning-subtle: 38 90% 15%;
-
-    --vibrancy: rgba(30, 30, 30, 0.72);
-    --vibrancy-border: rgba(255, 255, 255, 0.08);
-    --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
-    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
-    --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Accent glow */
+    --glow-accent: 0 0 20px rgba(245, 158, 11, 0.15);
   }
 
   * {
@@ -106,12 +82,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    @apply bg-sidebar;
+    background: hsl(var(--background));
     height: 100%;
   }
 
   body {
-    @apply bg-sidebar text-foreground;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     letter-spacing: -0.01em;
@@ -124,31 +101,28 @@
     height: 100%;
   }
 
-  /* Native scrollbar styling */
+  /* Custom scrollbar - more visible */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track {
-    background: transparent;
+    background: hsl(var(--background));
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
+    background: hsl(var(--muted));
     border-radius: 100px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
+    border: 2px solid hsl(var(--background));
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
-    border: 2px solid transparent;
-    background-clip: padding-box;
+    background: hsl(var(--muted-foreground) / 0.6);
   }
 
   ::-webkit-scrollbar-corner {
-    background: transparent;
+    background: hsl(var(--background));
   }
 
   /* macOS titlebar drag region */
@@ -160,63 +134,135 @@
     -webkit-app-region: no-drag;
   }
 
-  /* Selection */
+  /* Selection - use accent color */
   ::selection {
-    background: hsl(var(--accent) / 0.2);
+    background: hsl(var(--accent) / 0.3);
     color: inherit;
   }
 }
 
 @layer components {
-  /* macOS-style vibrancy effect */
-  .vibrancy {
-    background: var(--vibrancy);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  /* Elevated card style - the core visual pattern */
+  .card-elevated {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--card-border));
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    transition: all 0.2s ease;
   }
 
-  .vibrancy-border {
-    border-color: var(--vibrancy-border);
+  .card-elevated:hover {
+    background: hsl(var(--card-hover));
+    box-shadow: var(--shadow-card-hover);
+    border-color: hsl(var(--border) / 0.8);
   }
 
-  /* Segmented control (macOS style) */
+  /* Inset card for nested content */
+  .card-inset {
+    background: hsl(var(--background-secondary));
+    border: 1px solid hsl(var(--border-subtle));
+    border-radius: var(--radius);
+  }
+
+  /* Glass effect for special elements */
+  .glass {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  /* Segmented control - refined */
   .segmented-control {
-    @apply inline-flex items-center rounded-lg p-0.5;
-    background: hsl(var(--muted) / 0.6);
+    @apply inline-flex items-center rounded-xl p-1;
+    background: hsl(var(--background-secondary));
+    border: 1px solid hsl(var(--border-subtle));
   }
 
   .segmented-control-item {
-    @apply px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-150;
+    @apply px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200;
     color: hsl(var(--muted-foreground));
   }
 
   .segmented-control-item:hover:not(.segmented-control-item-active) {
     color: hsl(var(--foreground));
+    background: hsl(var(--muted) / 0.3);
   }
 
   .segmented-control-item-active {
-    @apply shadow-sm;
     background: hsl(var(--card));
     color: hsl(var(--foreground));
     box-shadow: var(--shadow-subtle);
+    border: 1px solid hsl(var(--border));
   }
 
-  /* macOS native list row */
+  /* List row - clear hover states */
   .list-row {
-    @apply flex items-center gap-3 px-3 py-2 rounded-lg transition-colors;
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150;
+    border: 1px solid transparent;
   }
 
   .list-row:hover {
-    background: hsl(var(--muted) / 0.5);
+    background: hsl(var(--card));
+    border-color: hsl(var(--border-subtle));
   }
 
   .list-row-selected {
     background: hsl(var(--accent));
     color: hsl(var(--accent-foreground));
+    border-color: hsl(var(--accent));
   }
 
   .list-row-selected:hover {
     background: hsl(var(--accent) / 0.9);
+  }
+
+  /* Stat card - for dashboard stats */
+  .stat-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--card-border));
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-card);
+    transition: all 0.2s ease;
+  }
+
+  .stat-card:hover {
+    border-color: hsl(var(--accent) / 0.3);
+    box-shadow: var(--shadow-card-hover), var(--glow-accent);
+  }
+
+  /* Badge styles */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium;
+    background: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+    border: 1px solid hsl(var(--border-subtle));
+  }
+
+  .badge-accent {
+    background: hsl(var(--accent-subtle));
+    color: hsl(var(--accent));
+    border-color: hsl(var(--accent) / 0.2);
+  }
+
+  .badge-success {
+    background: hsl(var(--success-subtle));
+    color: hsl(var(--success));
+    border-color: hsl(var(--success) / 0.2);
+  }
+
+  /* Icon container - for consistent icon backgrounds */
+  .icon-container {
+    @apply flex items-center justify-center rounded-xl;
+    background: hsl(var(--muted));
+    border: 1px solid hsl(var(--border-subtle));
+  }
+
+  .icon-container-accent {
+    background: hsl(var(--accent-subtle));
+    border-color: hsl(var(--accent) / 0.2);
+    color: hsl(var(--accent));
   }
 
   /* Prose styling for markdown content */
@@ -226,42 +272,54 @@
 
   .prose h1 {
     @apply text-xl font-semibold mb-4 mt-6 first:mt-0 tracking-tight;
+    color: hsl(var(--foreground));
   }
 
   .prose h2 {
     @apply text-lg font-semibold mb-3 mt-5 tracking-tight;
+    color: hsl(var(--foreground));
   }
 
   .prose h3 {
     @apply text-base font-medium mb-2 mt-4;
+    color: hsl(var(--foreground));
   }
 
   .prose p {
     @apply mb-3 text-[15px] leading-relaxed;
+    color: hsl(var(--foreground) / 0.85);
   }
 
   .prose strong {
-    @apply font-semibold text-foreground;
+    @apply font-semibold;
+    color: hsl(var(--foreground));
   }
 
   .prose em {
-    @apply text-muted-foreground;
+    color: hsl(var(--muted-foreground));
   }
 
   .prose a {
-    @apply text-accent underline underline-offset-2 hover:text-accent/80 transition-colors;
+    color: hsl(var(--accent));
+    @apply underline underline-offset-2 hover:opacity-80 transition-opacity;
   }
 
   .prose code {
-    @apply px-1.5 py-0.5 rounded-md bg-muted text-[13px] font-mono;
+    @apply px-1.5 py-0.5 rounded-md text-[13px] font-mono;
+    background: hsl(var(--muted));
+    color: hsl(var(--accent));
   }
 
   .prose pre {
-    @apply p-4 rounded-xl bg-muted overflow-x-auto my-4;
+    @apply p-4 rounded-xl overflow-x-auto my-4;
+    background: hsl(var(--background-secondary));
+    border: 1px solid hsl(var(--border));
   }
 
   .prose pre code {
-    @apply p-0 bg-transparent;
+    @apply p-0;
+    background: transparent;
+    color: hsl(var(--foreground));
   }
 
   .prose ul {
@@ -273,15 +331,19 @@
   }
 
   .prose li {
-    @apply text-foreground text-[15px];
+    @apply text-[15px];
+    color: hsl(var(--foreground) / 0.85);
   }
 
   .prose blockquote {
-    @apply border-l-2 border-accent/50 pl-4 my-4 text-muted-foreground italic;
+    @apply pl-4 my-4 italic;
+    border-left: 3px solid hsl(var(--accent) / 0.5);
+    color: hsl(var(--muted-foreground));
   }
 
   .prose hr {
-    @apply border-border my-6;
+    @apply my-6;
+    border-color: hsl(var(--border));
   }
 
   .prose img {
@@ -290,22 +352,27 @@
 
   .prose table {
     @apply w-full text-sm my-4;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-lg);
+    overflow: hidden;
   }
 
   .prose thead {
-    @apply border-b border-border;
+    background: hsl(var(--muted));
   }
 
   .prose th {
-    @apply px-4 py-2.5 text-left font-medium text-muted-foreground text-xs uppercase tracking-wide;
+    @apply px-4 py-2.5 text-left font-medium text-xs uppercase tracking-wide;
+    color: hsl(var(--muted-foreground));
   }
 
   .prose td {
-    @apply px-4 py-2.5 border-b border-border/50;
+    @apply px-4 py-2.5;
+    border-top: 1px solid hsl(var(--border-subtle));
   }
 
-  .prose tr:last-child td {
-    @apply border-b-0;
+  .prose tr:hover td {
+    background: hsl(var(--card-hover));
   }
 }
 
@@ -314,31 +381,60 @@
     text-wrap: balance;
   }
 
+  /* Gradient text utility */
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--accent)), hsl(35 100% 65%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   /* Fade animations */
   @keyframes fade-in {
-    from { opacity: 0; transform: translateY(4px); }
+    from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes pulse-subtle {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
   }
 
   .animate-fade-in {
-    animation: fade-in 0.2s ease-out;
+    animation: fade-in 0.25s ease-out;
   }
 
   .animate-fade-in-up {
-    animation: fade-in-up 0.3s ease-out;
+    animation: fade-in-up 0.35s ease-out;
   }
 
   .animate-pulse-subtle {
     animation: pulse-subtle 2s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--card)) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Glow utilities */
+  .glow-accent {
+    box-shadow: var(--glow-accent);
   }
 }

@@ -209,8 +209,8 @@ export default function Team(): JSX.Element {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-tight">Team</h1>
-          <p className="mt-0.5 text-[13px] text-muted-foreground">
+          <h1 className="text-[24px] font-bold tracking-tight">Team</h1>
+          <p className="mt-1 text-[14px] text-muted-foreground">
             View work summaries for your team members
           </p>
         </div>
@@ -259,11 +259,11 @@ export default function Team(): JSX.Element {
       </div>
 
       {/* Team Members */}
-      <Card className="p-5">
-        <div className="mb-4 flex items-center justify-between">
+      <Card className="p-6">
+        <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="text-[15px] font-semibold">Team Members</h2>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
+            <h2 className="text-[16px] font-semibold">Team Members</h2>
+            <p className="mt-0.5 text-[13px] text-muted-foreground">
               {teamMembers.length} member{teamMembers.length !== 1 ? 's' : ''} with {totalCommits} total commits
             </p>
           </div>
@@ -306,22 +306,22 @@ export default function Team(): JSX.Element {
             {teamMembers.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center justify-between rounded-xl border border-border/60 bg-card p-3.5 transition-all hover:border-border hover:shadow-subtle"
+                className="flex items-center justify-between rounded-xl border border-border-subtle bg-background-secondary p-4 transition-all hover:border-border hover:bg-card"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-subtle text-accent">
-                    <User className="h-4 w-4" />
+                <div className="flex items-center gap-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-subtle border border-accent/20 text-accent">
+                    <User className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-[13px] font-medium">{member.displayName}</p>
+                    <p className="text-[14px] font-medium">{member.displayName}</p>
                     <p className="text-[12px] text-muted-foreground">
                       {member.emails[0]}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[17px] font-semibold tabular-nums">{member.commitCount}</p>
-                  <p className="text-[11px] text-muted-foreground">commits</p>
+                  <p className="text-[22px] font-bold tabular-nums">{member.commitCount}</p>
+                  <p className="text-[11px] font-medium text-muted-foreground">commits</p>
                 </div>
               </div>
             ))}

@@ -12,34 +12,34 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         className={cn(
           // Base styles
-          'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-[13px] font-medium transition-all duration-150',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-1',
+          'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-[13px] font-semibold transition-all duration-150',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
           'disabled:pointer-events-none disabled:opacity-50',
-          'active:scale-[0.98]',
+          'active:scale-[0.97]',
           // Variants
           {
-            // Primary (filled accent)
-            'bg-accent text-accent-foreground shadow-subtle hover:bg-accent/90 active:bg-accent/85':
+            // Primary (filled accent - amber)
+            'bg-accent text-accent-foreground shadow-md hover:bg-accent/90 hover:shadow-lg':
               variant === 'default',
             // Secondary (filled muted)
-            'bg-muted text-foreground shadow-subtle hover:bg-muted/80':
+            'bg-card text-foreground border border-card-border shadow-card hover:bg-card-hover hover:shadow-card-hover':
               variant === 'secondary',
             // Outline
-            'border border-input-border bg-card text-foreground shadow-subtle hover:bg-muted/50':
+            'border border-border bg-transparent text-foreground hover:bg-card hover:border-card-border':
               variant === 'outline',
             // Ghost
-            'text-muted-foreground hover:bg-muted/60 hover:text-foreground':
+            'text-muted-foreground hover:bg-card hover:text-foreground':
               variant === 'ghost',
             // Destructive
-            'bg-destructive text-destructive-foreground shadow-subtle hover:bg-destructive/90':
+            'bg-destructive text-destructive-foreground shadow-md hover:bg-destructive/90':
               variant === 'destructive'
           },
           // Sizes
           {
-            'h-9 px-4 py-2': size === 'default',
-            'h-8 px-3': size === 'sm',
-            'h-11 px-6 text-[14px]': size === 'lg',
-            'h-9 w-9 p-0': size === 'icon'
+            'h-10 px-5 py-2': size === 'default',
+            'h-8 px-3 text-[12px]': size === 'sm',
+            'h-12 px-7 text-[14px]': size === 'lg',
+            'h-10 w-10 p-0': size === 'icon'
           },
           className
         )}

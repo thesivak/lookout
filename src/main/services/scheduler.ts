@@ -86,11 +86,6 @@ export function stopScheduler(): void {
   console.log('Scheduler stopped')
 }
 
-export function restartScheduler(mainWindow: BrowserWindow): void {
-  stopScheduler()
-  startScheduler(mainWindow)
-}
-
 function triggerScheduledGeneration(mainWindow: BrowserWindow): void {
   mainWindow.webContents.send('scheduled-generation')
 
@@ -126,19 +121,4 @@ export function showNotification(
   }
 
   notification.show()
-}
-
-export function showSummaryCompleteNotification(
-  mainWindow: BrowserWindow,
-  commitCount: number
-): void {
-  showNotification(
-    'Summary Ready',
-    `Your work summary is ready! ${commitCount} commits analyzed.`,
-    () => {
-      mainWindow.show()
-      mainWindow.focus()
-      mainWindow.webContents.send('navigate', 'my-work')
-    }
-  )
 }

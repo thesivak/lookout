@@ -17,7 +17,8 @@ export default {
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
-          hover: 'hsl(var(--card-hover))'
+          hover: 'hsl(var(--card-hover))',
+          border: 'hsl(var(--card-border))'
         },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
@@ -26,7 +27,8 @@ export default {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
-          subtle: 'hsl(var(--accent-subtle))'
+          subtle: 'hsl(var(--accent-subtle))',
+          muted: 'hsl(var(--accent-muted))'
         },
         border: {
           DEFAULT: 'hsl(var(--border))',
@@ -54,15 +56,19 @@ export default {
         }
       },
       borderRadius: {
-        xl: 'var(--radius-xl)',
-        lg: 'var(--radius-lg)',
-        md: 'var(--radius)',
-        sm: 'calc(var(--radius) - 2px)'
+        '2xl': 'var(--radius-xl)',
+        xl: 'var(--radius-lg)',
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)'
       },
       boxShadow: {
         'subtle': 'var(--shadow-subtle)',
         'medium': 'var(--shadow-medium)',
-        'elevated': 'var(--shadow-elevated)'
+        'elevated': 'var(--shadow-elevated)',
+        'card': 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
+        'glow-accent': 'var(--glow-accent)'
       },
       spacing: {
         'titlebar': 'var(--titlebar-height)',

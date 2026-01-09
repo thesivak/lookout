@@ -2,7 +2,7 @@ import { HTMLAttributes, forwardRef } from 'react'
 import { cn } from '../../lib/utils'
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'inset' | 'elevated'
+  variant?: 'default' | 'inset' | 'elevated' | 'interactive'
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -12,15 +12,18 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       className={cn(
         'rounded-xl text-card-foreground',
         {
-          // Default - subtle border with white background
-          'border border-border/60 bg-card shadow-subtle':
+          // Default - clear border with elevation
+          'border border-card-border bg-card shadow-card':
             variant === 'default',
-          // Inset - for nested content, no shadow
-          'border border-border/40 bg-card':
+          // Inset - for nested content, subtle background
+          'border border-border-subtle bg-background-secondary':
             variant === 'inset',
-          // Elevated - more prominent shadow
-          'border border-border/40 bg-card shadow-medium':
-            variant === 'elevated'
+          // Elevated - more prominent with stronger shadow
+          'border border-card-border bg-card shadow-medium':
+            variant === 'elevated',
+          // Interactive - hover effects
+          'border border-card-border bg-card shadow-card transition-all duration-200 hover:shadow-card-hover hover:border-border':
+            variant === 'interactive'
         },
         className
       )}
