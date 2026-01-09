@@ -4,57 +4,151 @@
 
 @layer base {
   :root {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 100%;
+    /* macOS Native Light Theme */
+    --background: 0 0% 96%;
+    --background-secondary: 0 0% 100%;
+    --foreground: 0 0% 11%;
 
-    --card: 0 0% 9%;
-    --card-foreground: 0 0% 100%;
+    --sidebar: 0 0% 95%;
+    --sidebar-foreground: 0 0% 25%;
+    --sidebar-accent: 214 100% 50%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 64%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 11%;
+    --card-hover: 0 0% 98%;
 
-    --accent: 234 58% 58%;
+    --muted: 0 0% 91%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 211 100% 50%;
     --accent-foreground: 0 0% 100%;
+    --accent-subtle: 211 100% 96%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 234 58% 58%;
+    --border: 0 0% 88%;
+    --border-subtle: 0 0% 92%;
+    --input: 0 0% 100%;
+    --input-border: 0 0% 82%;
+    --ring: 211 100% 50%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-subtle: 0 84% 96%;
 
-    --success: 142 71% 45%;
+    --success: 142 71% 40%;
     --success-foreground: 0 0% 100%;
+    --success-subtle: 142 71% 95%;
 
-    --radius: 0.5rem;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-subtle: 38 92% 95%;
+
+    --radius: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    /* macOS-specific */
+    --titlebar-height: 52px;
+    --sidebar-width: 220px;
+    --vibrancy: rgba(255, 255, 255, 0.72);
+    --vibrancy-border: rgba(0, 0, 0, 0.06);
+    --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+    --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Dark mode support */
+  .dark {
+    --background: 0 0% 12%;
+    --background-secondary: 0 0% 16%;
+    --foreground: 0 0% 98%;
+
+    --sidebar: 0 0% 14%;
+    --sidebar-foreground: 0 0% 75%;
+    --sidebar-accent: 211 100% 55%;
+
+    --card: 0 0% 16%;
+    --card-foreground: 0 0% 98%;
+    --card-hover: 0 0% 18%;
+
+    --muted: 0 0% 22%;
+    --muted-foreground: 0 0% 55%;
+
+    --accent: 211 100% 55%;
+    --accent-foreground: 0 0% 100%;
+    --accent-subtle: 211 100% 15%;
+
+    --border: 0 0% 22%;
+    --border-subtle: 0 0% 18%;
+    --input: 0 0% 18%;
+    --input-border: 0 0% 28%;
+
+    --destructive: 0 72% 55%;
+    --destructive-subtle: 0 72% 15%;
+
+    --success: 142 65% 45%;
+    --success-subtle: 142 65% 15%;
+
+    --warning: 38 90% 55%;
+    --warning-subtle: 38 90% 15%;
+
+    --vibrancy: rgba(30, 30, 30, 0.72);
+    --vibrancy-border: rgba(255, 255, 255, 0.08);
+    --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
+    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+    --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
   * {
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    @apply bg-sidebar;
+    height: 100%;
   }
 
-  /* Custom scrollbar for dark theme */
+  body {
+    @apply bg-sidebar text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    letter-spacing: -0.01em;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  #root {
+    height: 100%;
+  }
+
+  /* Native scrollbar styling */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(var(--background));
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted));
-    border-radius: 4px;
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 100px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground));
+    background: hsl(var(--muted-foreground) / 0.5);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
   }
 
   /* macOS titlebar drag region */
@@ -65,38 +159,85 @@
   .titlebar-no-drag {
     -webkit-app-region: no-drag;
   }
-}
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  /* Selection */
+  ::selection {
+    background: hsl(var(--accent) / 0.2);
+    color: inherit;
   }
 }
 
-/* Prose styling for markdown content */
 @layer components {
+  /* macOS-style vibrancy effect */
+  .vibrancy {
+    background: var(--vibrancy);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  .vibrancy-border {
+    border-color: var(--vibrancy-border);
+  }
+
+  /* Segmented control (macOS style) */
+  .segmented-control {
+    @apply inline-flex items-center rounded-lg p-0.5;
+    background: hsl(var(--muted) / 0.6);
+  }
+
+  .segmented-control-item {
+    @apply px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-150;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .segmented-control-item:hover:not(.segmented-control-item-active) {
+    color: hsl(var(--foreground));
+  }
+
+  .segmented-control-item-active {
+    @apply shadow-sm;
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    box-shadow: var(--shadow-subtle);
+  }
+
+  /* macOS native list row */
+  .list-row {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg transition-colors;
+  }
+
+  .list-row:hover {
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  .list-row-selected {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  .list-row-selected:hover {
+    background: hsl(var(--accent) / 0.9);
+  }
+
+  /* Prose styling for markdown content */
   .prose {
     @apply text-foreground leading-relaxed;
   }
 
-  .prose-invert {
-    @apply text-foreground;
-  }
-
   .prose h1 {
-    @apply text-2xl font-bold mb-4 mt-6 first:mt-0;
+    @apply text-xl font-semibold mb-4 mt-6 first:mt-0 tracking-tight;
   }
 
   .prose h2 {
-    @apply text-xl font-semibold mb-3 mt-5;
+    @apply text-lg font-semibold mb-3 mt-5 tracking-tight;
   }
 
   .prose h3 {
-    @apply text-lg font-medium mb-2 mt-4;
+    @apply text-base font-medium mb-2 mt-4;
   }
 
   .prose p {
-    @apply mb-3;
+    @apply mb-3 text-[15px] leading-relaxed;
   }
 
   .prose strong {
@@ -108,15 +249,15 @@
   }
 
   .prose a {
-    @apply text-accent underline underline-offset-2 hover:text-accent/80;
+    @apply text-accent underline underline-offset-2 hover:text-accent/80 transition-colors;
   }
 
   .prose code {
-    @apply px-1.5 py-0.5 rounded bg-muted text-sm font-mono;
+    @apply px-1.5 py-0.5 rounded-md bg-muted text-[13px] font-mono;
   }
 
   .prose pre {
-    @apply p-4 rounded-lg bg-muted overflow-x-auto my-4;
+    @apply p-4 rounded-xl bg-muted overflow-x-auto my-4;
   }
 
   .prose pre code {
@@ -124,19 +265,19 @@
   }
 
   .prose ul {
-    @apply my-3 space-y-1;
+    @apply my-3 space-y-1.5;
   }
 
   .prose ol {
-    @apply my-3 space-y-1 list-decimal list-inside;
+    @apply my-3 space-y-1.5 list-decimal list-inside;
   }
 
   .prose li {
-    @apply text-foreground;
+    @apply text-foreground text-[15px];
   }
 
   .prose blockquote {
-    @apply border-l-2 border-accent pl-4 my-4 text-muted-foreground italic;
+    @apply border-l-2 border-accent/50 pl-4 my-4 text-muted-foreground italic;
   }
 
   .prose hr {
@@ -144,7 +285,7 @@
   }
 
   .prose img {
-    @apply rounded-lg my-4;
+    @apply rounded-xl my-4;
   }
 
   .prose table {
@@ -156,14 +297,48 @@
   }
 
   .prose th {
-    @apply px-4 py-2 text-left font-medium text-muted-foreground;
+    @apply px-4 py-2.5 text-left font-medium text-muted-foreground text-xs uppercase tracking-wide;
   }
 
   .prose td {
-    @apply px-4 py-2 border-b border-border;
+    @apply px-4 py-2.5 border-b border-border/50;
   }
 
   .prose tr:last-child td {
     @apply border-b-0;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Fade animations */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse-subtle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.3s ease-out;
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 2s ease-in-out infinite;
   }
 }

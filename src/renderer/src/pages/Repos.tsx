@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
-import { FolderGit2, Plus, Trash2, AlertCircle, FolderSearch } from 'lucide-react'
+import { FolderGit2, Plus, Trash2, AlertCircle, FolderSearch, CheckCircle } from 'lucide-react'
 
 interface Repository {
   id: number
@@ -65,12 +65,12 @@ export default function Repos(): JSX.Element {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Repositories</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-[22px] font-semibold tracking-tight">Repositories</h1>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">
             Manage Git repositories for summary generation
           </p>
         </div>
@@ -82,80 +82,92 @@ export default function Repos(): JSX.Element {
 
       {/* Error Message */}
       {error && (
-        <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-          <AlertCircle className="h-4 w-4" />
-          {error}
+        <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive-subtle p-4">
+          <AlertCircle className="h-5 w-5 flex-shrink-0 text-destructive" />
+          <span className="text-[13px] text-destructive">{error}</span>
         </div>
       )}
 
       {/* Repository List */}
-      <Card className="divide-y divide-border">
+      <Card className="overflow-hidden">
         {loading ? (
           <div className="flex h-32 items-center justify-center">
-            <p className="text-sm text-muted-foreground">Loading repositories...</p>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+              <span className="text-[13px]">Loading repositories...</span>
+            </div>
           </div>
         ) : repos.length === 0 ? (
-          <div className="flex h-48 flex-col items-center justify-center gap-4 p-6">
-            <FolderGit2 className="h-12 w-12 text-muted-foreground" />
+          <div className="flex h-56 flex-col items-center justify-center gap-4 p-6">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-subtle">
+              <FolderGit2 className="h-7 w-7 text-accent" />
+            </div>
             <div className="text-center">
-              <p className="font-medium">No repositories added</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[14px] font-medium">No repositories added</p>
+              <p className="mt-1 text-[13px] text-muted-foreground">
                 Add your first Git repository to start generating summaries
               </p>
             </div>
-            <Button onClick={handleAddRepo}>
+            <Button onClick={handleAddRepo} className="mt-2">
               <Plus className="mr-2 h-4 w-4" />
               Add Repository
             </Button>
           </div>
         ) : (
-          repos.map((repo) => (
-            <div
-              key={repo.id}
-              className="flex items-center justify-between gap-4 p-4"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`rounded-lg p-2 ${
-                    repo.is_available ? 'bg-accent/20' : 'bg-destructive/20'
-                  }`}
-                >
-                  <FolderGit2
-                    className={`h-5 w-5 ${
-                      repo.is_available ? 'text-accent' : 'text-destructive'
+          <div className="divide-y divide-border/50">
+            {repos.map((repo) => (
+              <div
+                key={repo.id}
+                className="flex items-center justify-between gap-4 p-4 transition-colors hover:bg-card-hover"
+              >
+                <div className="flex items-center gap-3.5">
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                      repo.is_available ? 'bg-accent-subtle' : 'bg-destructive-subtle'
                     }`}
-                  />
-                </div>
-                <div>
-                  <p className="font-medium">{repo.name}</p>
-                  <p className="text-sm text-muted-foreground">{repo.path}</p>
-                  {!repo.is_available && (
-                    <p className="text-xs text-destructive">Repository not found</p>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {!repo.is_available && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRelocate(repo.id)}
                   >
-                    <FolderSearch className="mr-2 h-4 w-4" />
-                    Relocate
+                    <FolderGit2
+                      className={`h-5 w-5 ${
+                        repo.is_available ? 'text-accent' : 'text-destructive'
+                      }`}
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[13px] font-medium">{repo.name}</p>
+                      {repo.is_available && (
+                        <CheckCircle className="h-3.5 w-3.5 text-success" />
+                      )}
+                    </div>
+                    <p className="truncate text-[12px] text-muted-foreground">{repo.path}</p>
+                    {!repo.is_available && (
+                      <p className="text-[11px] text-destructive">Repository not found</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {!repo.is_available && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRelocate(repo.id)}
+                    >
+                      <FolderSearch className="mr-1.5 h-3.5 w-3.5" />
+                      Relocate
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRemoveRepo(repo.id)}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveRepo(repo.id)}
-                  className="text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </Card>
     </div>

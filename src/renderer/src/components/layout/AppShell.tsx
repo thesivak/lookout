@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { TabId } from '../../App'
-import TopNav from './TopNav'
+import Sidebar from './Sidebar'
 
 interface AppShellProps {
   children: ReactNode
@@ -10,17 +10,22 @@ interface AppShellProps {
 
 export default function AppShell({ children, activeTab, onTabChange }: AppShellProps): JSX.Element {
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
-      {/* Titlebar drag region for macOS */}
-      <div className="titlebar-drag-region h-8 flex-shrink-0" />
+    <div className="flex h-screen overflow-hidden bg-sidebar">
+      {/* Sidebar with integrated titlebar */}
+      <Sidebar activeTab={activeTab} onTabChange={onTabChange} />
 
-      {/* Navigation */}
-      <TopNav activeTab={activeTab} onTabChange={onTabChange} />
+      {/* Main content area */}
+      <div className="flex flex-1 flex-col overflow-hidden bg-background-secondary">
+        {/* Titlebar drag region */}
+        <div className="titlebar-drag-region h-8 flex-shrink-0" />
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-6xl px-6 py-6">{children}</div>
-      </main>
+        {/* Main content */}
+        <main className="flex-1 overflow-auto">
+          <div className="mx-auto max-w-4xl px-8 py-8">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

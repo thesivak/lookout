@@ -12,7 +12,6 @@ import {
   Users,
   Settings as SettingsIcon,
   UserCog,
-  Loader2,
   Trash2,
   EyeOff,
   Eye,
@@ -29,7 +28,7 @@ interface SettingsData {
   date_range_default: string
 }
 
-// Toggle switch component
+// macOS-style toggle switch
 function Toggle({
   checked,
   onChange,
@@ -43,13 +42,13 @@ function Toggle({
     <button
       onClick={() => onChange(!checked)}
       disabled={disabled}
-      className={`relative h-6 w-11 rounded-full transition-colors disabled:opacity-50 ${
-        checked ? 'bg-accent' : 'bg-muted'
+      className={`relative h-[22px] w-[40px] rounded-full transition-all duration-200 disabled:opacity-50 ${
+        checked ? 'bg-accent' : 'bg-muted-foreground/30'
       }`}
     >
       <span
-        className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
-          checked ? 'translate-x-5' : 'translate-x-0'
+        className={`absolute top-[2px] h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-all duration-200 ${
+          checked ? 'left-[20px]' : 'left-[2px]'
         }`}
       />
     </button>
@@ -125,7 +124,6 @@ export default function Settings(): JSX.Element {
     loadSettings()
   }, [])
 
-  // Load contributors when that section is active
   const loadContributors = useCallback(async () => {
     try {
       setContributorsLoading(true)
@@ -327,7 +325,10 @@ export default function Settings(): JSX.Element {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+          <span className="text-[13px]">Loading...</span>
+        </div>
       </div>
     )
   }
@@ -336,18 +337,18 @@ export default function Settings(): JSX.Element {
   const excludedCount = profiles.filter((p) => p.isExcluded).length
 
   return (
-    <div className="flex gap-6">
+    <div className="animate-fade-in flex gap-8">
       {/* Sidebar */}
-      <div className="w-48 flex-shrink-0">
-        <nav className="space-y-1">
+      <div className="w-44 flex-shrink-0">
+        <nav className="space-y-0.5">
           {sections.map((section) => (
             <button
               key={section.id}
               onClick={() => setActiveSection(section.id)}
-              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
+              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
                 activeSection === section.id
-                  ? 'bg-accent text-accent-foreground'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  ? 'bg-accent text-white'
+                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
               }`}
             >
               <section.icon className="h-4 w-4" />
@@ -362,15 +363,15 @@ export default function Settings(): JSX.Element {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">Settings</h1>
-            <p className="text-sm text-muted-foreground">Configure Lookout preferences</p>
+            <h1 className="text-[22px] font-semibold tracking-tight">Settings</h1>
+            <p className="mt-0.5 text-[13px] text-muted-foreground">Configure Lookout preferences</p>
           </div>
           {activeSection !== 'contributors' && activeSection !== 'shortcuts' && activeSection !== 'about' && (
             <Button onClick={handleSave} disabled={saving}>
               {saved ? (
                 <>
                   <Check className="mr-2 h-4 w-4" />
-                  Saved!
+                  Saved
                 </>
               ) : (
                 <>
@@ -384,167 +385,167 @@ export default function Settings(): JSX.Element {
 
         {/* General Section */}
         {activeSection === 'general' && (
-          <>
-            <Card className="p-6">
-              <div className="mb-4 flex items-center gap-2">
-                <Monitor className="h-5 w-5 text-accent" />
-                <h2 className="text-lg font-medium">System Integration</h2>
+          <div className="space-y-5">
+            <Card className="p-5">
+              <div className="mb-4 flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-subtle">
+                  <Monitor className="h-4 w-4 text-accent" />
+                </div>
+                <h2 className="text-[15px] font-semibold">System Integration</h2>
               </div>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Launch at Login</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-[13px] font-medium">Launch at Login</p>
+                    <p className="text-[12px] text-muted-foreground">
                       Start Lookout automatically when you log in
                     </p>
                   </div>
                   <Toggle checked={autoLaunch} onChange={setAutoLaunch} />
                 </div>
-                <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-                  <p>
-                    Lookout runs in your menu bar. Close the window to minimize to tray, or use{' '}
-                    <kbd className="rounded bg-muted px-1.5 py-0.5 text-xs">Cmd+Q</kbd> to quit
-                    completely.
-                  </p>
+                <div className="rounded-lg bg-muted/40 p-3 text-[12px] text-muted-foreground">
+                  Lookout runs in your menu bar. Close the window to minimize to tray, or use{' '}
+                  <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">Cmd+Q</kbd> to quit.
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6">
-              <div className="mb-4 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-success" />
-                <h2 className="text-lg font-medium">Scheduled Generation</h2>
+            <Card className="p-5">
+              <div className="mb-4 flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-success-subtle">
+                  <Clock className="h-4 w-4 text-success" />
+                </div>
+                <h2 className="text-[15px] font-semibold">Scheduled Generation</h2>
               </div>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Enable Daily Generation</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-[13px] font-medium">Enable Daily Generation</p>
+                    <p className="text-[12px] text-muted-foreground">
                       Automatically generate a summary each day
                     </p>
                   </div>
                   <Toggle
                     checked={settings.scheduled_enabled === 'true'}
                     onChange={(checked) =>
-                      setSettings({
-                        ...settings,
-                        scheduled_enabled: checked ? 'true' : 'false'
-                      })
+                      setSettings({ ...settings, scheduled_enabled: checked ? 'true' : 'false' })
                     }
                   />
                 </div>
                 <div className="flex items-center gap-4">
                   <div>
-                    <label className="mb-2 block text-sm font-medium">Generation Time</label>
+                    <label className="mb-1.5 block text-[12px] font-medium">Time</label>
                     <input
                       type="time"
                       value={settings.scheduled_time}
                       onChange={(e) => setSettings({ ...settings, scheduled_time: e.target.value })}
                       disabled={settings.scheduled_enabled !== 'true'}
-                      className="rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+                      className="rounded-lg border border-input-border bg-input px-3 py-1.5 text-[13px] disabled:opacity-50"
                     />
                   </div>
                   {settings.scheduled_enabled === 'true' && (
-                    <p className="mt-6 text-sm text-muted-foreground">
-                      A summary will be generated daily at {settings.scheduled_time}
+                    <p className="mt-5 text-[12px] text-muted-foreground">
+                      Summary generated daily at {settings.scheduled_time}
                     </p>
                   )}
                 </div>
               </div>
             </Card>
-          </>
+          </div>
         )}
 
         {/* Templates Section */}
         {activeSection === 'templates' && (
-          <>
-            <Card className="p-6">
-              <div className="mb-4 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-purple-400" />
-                <h2 className="text-lg font-medium">Default Template</h2>
+          <div className="space-y-5">
+            <Card className="p-5">
+              <div className="mb-4 flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
+                  <FileText className="h-4 w-4 text-purple-600" />
+                </div>
+                <h2 className="text-[15px] font-semibold">Default Template</h2>
               </div>
-              <p className="mb-4 text-sm text-muted-foreground">
+              <p className="mb-4 text-[12px] text-muted-foreground">
                 Choose the default style for generated summaries
               </p>
               <div className="grid gap-3 sm:grid-cols-3">
                 {[
-                  { value: 'technical', label: 'Technical', desc: 'Detailed, code-focused summaries' },
+                  { value: 'technical', label: 'Technical', desc: 'Detailed, code-focused' },
                   { value: 'manager-friendly', label: 'Manager-Friendly', desc: 'High-level, business-oriented' },
-                  { value: 'casual-standup', label: 'Casual Standup', desc: 'Brief, conversational tone' }
+                  { value: 'casual-standup', label: 'Casual', desc: 'Brief, conversational' }
                 ].map((template) => (
                   <button
                     key={template.value}
                     onClick={() => setSettings({ ...settings, default_prompt_template: template.value })}
-                    className={`rounded-lg border p-4 text-left transition-colors ${
+                    className={`rounded-xl border p-4 text-left transition-all ${
                       settings.default_prompt_template === template.value
-                        ? 'border-accent bg-accent/10'
-                        : 'border-border hover:border-muted-foreground'
+                        ? 'border-accent bg-accent-subtle shadow-subtle'
+                        : 'border-border hover:border-muted-foreground/50'
                     }`}
                   >
-                    <p className="font-medium">{template.label}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{template.desc}</p>
+                    <p className="text-[13px] font-medium">{template.label}</p>
+                    <p className="mt-0.5 text-[12px] text-muted-foreground">{template.desc}</p>
                   </button>
                 ))}
               </div>
             </Card>
 
-            <Card className="p-6">
-              <div className="mb-4">
-                <h2 className="text-lg font-medium">Default Date Range</h2>
-                <p className="text-sm text-muted-foreground">
-                  Pre-selected range when generating summaries
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
+            <Card className="p-5">
+              <h2 className="mb-1 text-[15px] font-semibold">Default Date Range</h2>
+              <p className="mb-4 text-[12px] text-muted-foreground">
+                Pre-selected range when generating summaries
+              </p>
+              <div className="segmented-control">
                 {[
                   { value: 'previous_day', label: 'Yesterday' },
                   { value: 'previous_week', label: 'Last 7 Days' },
                   { value: 'previous_month', label: 'Last 30 Days' }
                 ].map((option) => (
-                  <Button
+                  <button
                     key={option.value}
-                    variant={settings.date_range_default === option.value ? 'default' : 'outline'}
-                    size="sm"
                     onClick={() => setSettings({ ...settings, date_range_default: option.value })}
+                    className={`segmented-control-item ${settings.date_range_default === option.value ? 'segmented-control-item-active' : ''}`}
                   >
                     {option.label}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </Card>
-          </>
+          </div>
         )}
 
         {/* Contributors Section */}
         {activeSection === 'contributors' && (
-          <>
-            <div className="flex gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <UserCog className="h-4 w-4 text-accent" />
-                <span>{totalProfiles} profiles</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span>{unaliasedContributors.length} unaliased</span>
-              </div>
+          <div className="space-y-5">
+            <div className="flex gap-4 text-[12px]">
+              <span className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1">
+                <UserCog className="h-3.5 w-3.5 text-accent" />
+                {totalProfiles} profiles
+              </span>
+              <span className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1">
+                <Users className="h-3.5 w-3.5" />
+                {unaliasedContributors.length} unaliased
+              </span>
               {excludedCount > 0 && (
-                <div className="flex items-center gap-2">
-                  <EyeOff className="h-4 w-4 text-destructive" />
-                  <span>{excludedCount} excluded</span>
-                </div>
+                <span className="flex items-center gap-1.5 rounded-md bg-destructive-subtle px-2 py-1 text-destructive">
+                  <EyeOff className="h-3.5 w-3.5" />
+                  {excludedCount} excluded
+                </span>
               )}
             </div>
 
             {contributorsLoading ? (
-              <div className="flex h-64 items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="flex h-48 items-center justify-center">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+                  <span className="text-[13px]">Loading...</span>
+                </div>
               </div>
             ) : (
               <>
                 {profiles.length > 0 && (
-                  <Card className="p-6">
-                    <h2 className="mb-4 text-lg font-medium">Contributor Profiles</h2>
-                    <div className="space-y-3">
+                  <Card className="p-5">
+                    <h2 className="mb-4 text-[15px] font-semibold">Contributor Profiles</h2>
+                    <div className="space-y-2.5">
                       {[...profiles]
                         .sort((a, b) => {
                           if (a.isExcluded !== b.isExcluded) return a.isExcluded ? 1 : -1
@@ -553,10 +554,10 @@ export default function Settings(): JSX.Element {
                         .map((profile) => (
                           <div
                             key={profile.id}
-                            className={`rounded-lg border p-4 transition-colors ${
+                            className={`rounded-xl border p-4 transition-all ${
                               profile.isExcluded
-                                ? 'border-destructive/30 bg-destructive/5 opacity-60'
-                                : 'border-border'
+                                ? 'border-destructive/20 bg-destructive-subtle/50 opacity-60'
+                                : 'border-border/60'
                             }`}
                           >
                             <div className="flex items-start justify-between">
@@ -567,7 +568,7 @@ export default function Settings(): JSX.Element {
                                       type="text"
                                       value={editingName}
                                       onChange={(e) => setEditingName(e.target.value)}
-                                      className="rounded border border-input bg-background px-2 py-1 text-sm"
+                                      className="rounded-lg border border-input-border bg-input px-2 py-1 text-[13px]"
                                       autoFocus
                                       onKeyDown={(e) => {
                                         if (e.key === 'Enter') handleSaveEdit()
@@ -583,54 +584,51 @@ export default function Settings(): JSX.Element {
                                   </div>
                                 ) : (
                                   <div className="mb-2 flex items-center gap-2">
-                                    <span className={`font-medium ${profile.isExcluded ? 'line-through' : ''}`}>
+                                    <span className={`text-[13px] font-medium ${profile.isExcluded ? 'line-through' : ''}`}>
                                       {profile.displayName}
                                     </span>
                                     <button
                                       onClick={() => handleStartEdit(profile)}
-                                      className="rounded p-1 opacity-50 hover:bg-muted hover:opacity-100"
-                                      title="Edit name"
+                                      className="rounded p-0.5 opacity-50 hover:bg-muted hover:opacity-100"
                                     >
-                                      <Edit2 className="h-3 w-3 text-muted-foreground" />
+                                      <Edit2 className="h-3 w-3" />
                                     </button>
                                   </div>
                                 )}
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-1.5">
                                   {profile.emails.map((email) => (
-                                    <div
+                                    <span
                                       key={email.email}
-                                      className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs"
+                                      className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px]"
                                     >
-                                      <span>{email.email}</span>
+                                      {email.email}
                                       {profile.emails.length > 1 && (
                                         <button
                                           onClick={() => handleRemoveEmailFromProfile(email.email)}
-                                          className="ml-1 rounded-full p-0.5 hover:bg-background"
-                                          title="Remove email from profile"
+                                          className="ml-0.5 rounded-full p-0.5 hover:bg-card"
                                         >
-                                          <X className="h-3 w-3" />
+                                          <X className="h-2.5 w-2.5" />
                                         </button>
                                       )}
-                                    </div>
+                                    </span>
                                   ))}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1.5">
                                 <button
                                   onClick={() => handleToggleExclusion(profile)}
                                   className={`rounded-lg p-2 transition-colors ${
                                     profile.isExcluded
-                                      ? 'bg-success/10 text-success hover:bg-success/20'
-                                      : 'bg-destructive/10 text-destructive hover:bg-destructive/20'
+                                      ? 'bg-success-subtle text-success hover:bg-success-subtle/80'
+                                      : 'bg-destructive-subtle text-destructive hover:bg-destructive-subtle/80'
                                   }`}
-                                  title={profile.isExcluded ? 'Include in summaries' : 'Exclude from summaries'}
+                                  title={profile.isExcluded ? 'Include' : 'Exclude'}
                                 >
                                   {profile.isExcluded ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                                 </button>
                                 <button
                                   onClick={() => handleDeleteProfile(profile.id)}
-                                  className="rounded-lg bg-muted p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                                  title="Delete profile"
+                                  className="rounded-lg bg-muted p-2 text-muted-foreground transition-colors hover:bg-destructive-subtle hover:text-destructive"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </button>
@@ -643,18 +641,18 @@ export default function Settings(): JSX.Element {
                 )}
 
                 {unaliasedContributors.length > 0 && (
-                  <Card className="p-6">
+                  <Card className="p-5">
                     <div className="mb-4 flex items-center justify-between">
                       <div>
-                        <h2 className="text-lg font-medium">Unaliased Contributors</h2>
-                        <p className="text-sm text-muted-foreground">
-                          Contributors without a profile. Select multiple to merge.
+                        <h2 className="text-[15px] font-semibold">Unaliased Contributors</h2>
+                        <p className="mt-0.5 text-[12px] text-muted-foreground">
+                          Select multiple to merge into one profile
                         </p>
                       </div>
                       {selectedForMerge.size >= 2 && (
-                        <Button onClick={handleStartMerge}>
-                          <Merge className="mr-2 h-4 w-4" />
-                          Merge Selected ({selectedForMerge.size})
+                        <Button onClick={handleStartMerge} size="sm">
+                          <Merge className="mr-1.5 h-3.5 w-3.5" />
+                          Merge ({selectedForMerge.size})
                         </Button>
                       )}
                     </div>
@@ -664,8 +662,8 @@ export default function Settings(): JSX.Element {
                         return (
                           <div
                             key={contributor.email}
-                            className={`flex items-center justify-between rounded-lg border p-3 transition-colors ${
-                              isSelected ? 'border-accent bg-accent/5' : 'border-border'
+                            className={`flex items-center justify-between rounded-xl border p-3.5 transition-all ${
+                              isSelected ? 'border-accent bg-accent-subtle' : 'border-border/60'
                             }`}
                           >
                             <div className="flex items-center gap-3">
@@ -673,15 +671,15 @@ export default function Settings(): JSX.Element {
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => handleToggleSelect(contributor.email.toLowerCase())}
-                                className="h-4 w-4 rounded border-input"
+                                className="h-4 w-4 rounded border-input-border accent-accent"
                               />
                               <div>
-                                <p className="font-medium">{contributor.name}</p>
-                                <p className="text-sm text-muted-foreground">{contributor.email}</p>
+                                <p className="text-[13px] font-medium">{contributor.name}</p>
+                                <p className="text-[12px] text-muted-foreground">{contributor.email}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="text-sm text-muted-foreground">
+                              <span className="text-[12px] text-muted-foreground">
                                 {contributor.commitCount} commits
                               </span>
                               <Button
@@ -690,12 +688,11 @@ export default function Settings(): JSX.Element {
                                 onClick={() => handleStartCreateAlias(contributor)}
                               >
                                 <Plus className="mr-1 h-3 w-3" />
-                                Create Alias
+                                Alias
                               </Button>
                               <button
                                 onClick={() => handleQuickExclude(contributor)}
-                                className="rounded-lg bg-destructive/10 p-2 text-destructive transition-colors hover:bg-destructive/20"
-                                title="Exclude from summaries"
+                                className="rounded-lg bg-destructive-subtle p-2 text-destructive hover:bg-destructive-subtle/80"
                               >
                                 <EyeOff className="h-4 w-4" />
                               </button>
@@ -708,11 +705,13 @@ export default function Settings(): JSX.Element {
                 )}
 
                 {profiles.length === 0 && unaliasedContributors.length === 0 && (
-                  <Card className="p-6">
+                  <Card className="p-5">
                     <div className="flex flex-col items-center justify-center py-12">
-                      <Users className="mb-4 h-12 w-12 text-muted-foreground" />
-                      <p className="font-medium">No contributors found</p>
-                      <p className="text-sm text-muted-foreground">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+                        <Users className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <p className="mt-3 text-[13px] font-medium">No contributors found</p>
+                      <p className="text-[12px] text-muted-foreground">
                         Import repositories to see contributors
                       </p>
                     </div>
@@ -720,52 +719,57 @@ export default function Settings(): JSX.Element {
                 )}
               </>
             )}
-          </>
+          </div>
         )}
 
         {/* Shortcuts Section */}
         {activeSection === 'shortcuts' && (
-          <Card className="p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <Keyboard className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-medium">Keyboard Shortcuts</h2>
+          <Card className="p-5">
+            <div className="mb-4 flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                <Keyboard className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <h2 className="text-[15px] font-semibold">Keyboard Shortcuts</h2>
             </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
-                <span>Generate Summary</span>
-                <kbd className="rounded bg-muted px-2 py-1 text-xs">Cmd+G</kbd>
-              </div>
-              <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
-                <span>Dashboard</span>
-                <kbd className="rounded bg-muted px-2 py-1 text-xs">Cmd+1</kbd>
-              </div>
-              <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
-                <span>My Work</span>
-                <kbd className="rounded bg-muted px-2 py-1 text-xs">Cmd+2</kbd>
-              </div>
-              <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
-                <span>Settings</span>
-                <kbd className="rounded bg-muted px-2 py-1 text-xs">Cmd+,</kbd>
-              </div>
+            <div className="space-y-2">
+              {[
+                { action: 'Generate Summary', keys: 'Cmd+G' },
+                { action: 'Dashboard', keys: 'Cmd+1' },
+                { action: 'My Work', keys: 'Cmd+2' },
+                { action: 'Settings', keys: 'Cmd+,' }
+              ].map((shortcut) => (
+                <div
+                  key={shortcut.action}
+                  className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2.5"
+                >
+                  <span className="text-[13px]">{shortcut.action}</span>
+                  <kbd className="rounded bg-card px-2 py-1 font-mono text-[11px] shadow-subtle">
+                    {shortcut.keys}
+                  </kbd>
+                </div>
+              ))}
             </div>
           </Card>
         )}
 
         {/* About Section */}
         {activeSection === 'about' && (
-          <Card className="p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <Info className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-medium">About Lookout</h2>
+          <Card className="p-5">
+            <div className="mb-4 flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                <Info className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <h2 className="text-[15px] font-semibold">About Lookout</h2>
             </div>
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="space-y-2 text-[13px]">
               <p>
-                <span className="text-foreground">Version:</span> 1.0.0
+                <span className="text-muted-foreground">Version:</span>{' '}
+                <span className="font-medium">1.0.0</span>
               </p>
-              <p>
-                Lookout generates AI-powered summaries of your Git commits using Claude Code.
+              <p className="text-muted-foreground">
+                Lookout generates AI-powered summaries of your Git commits using Claude.
               </p>
-              <p className="pt-2">
+              <p className="pt-2 text-[12px] text-muted-foreground">
                 Made with Claude by Anthropic
               </p>
             </div>
@@ -775,27 +779,27 @@ export default function Settings(): JSX.Element {
 
       {/* Merge Modal */}
       {showMergeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-xl">
-            <h3 className="mb-4 text-lg font-medium">Merge Contributors</h3>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Merging {selectedForMerge.size} contributors into one profile. Choose a display name:
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-card p-6 shadow-elevated">
+            <h3 className="text-[17px] font-semibold">Merge Contributors</h3>
+            <p className="mt-1 text-[13px] text-muted-foreground">
+              Merging {selectedForMerge.size} contributors into one profile
             </p>
             <input
               type="text"
               value={mergeDisplayName}
               onChange={(e) => setMergeDisplayName(e.target.value)}
               placeholder="Display name"
-              className="mb-4 w-full rounded-md border border-input bg-background px-3 py-2"
+              className="mt-4 w-full rounded-lg border border-input-border bg-input px-3 py-2 text-[13px]"
               autoFocus
             />
-            <div className="mb-4 max-h-40 overflow-y-auto rounded-lg bg-muted/50 p-3">
-              <p className="mb-2 text-xs font-medium text-muted-foreground">Emails to merge:</p>
+            <div className="mt-3 max-h-32 overflow-y-auto rounded-lg bg-muted/50 p-3">
+              <p className="mb-1.5 text-[11px] font-medium text-muted-foreground">Emails to merge:</p>
               {Array.from(selectedForMerge).map((email) => (
-                <div key={email} className="text-sm">{email}</div>
+                <div key={email} className="text-[12px]">{email}</div>
               ))}
             </div>
-            <div className="flex justify-end gap-2">
+            <div className="mt-5 flex justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -816,10 +820,10 @@ export default function Settings(): JSX.Element {
 
       {/* Create Alias Modal */}
       {showCreateAliasModal && createAliasTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-xl">
-            <h3 className="mb-4 text-lg font-medium">Create Alias</h3>
-            <p className="mb-4 text-sm text-muted-foreground">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-card p-6 shadow-elevated">
+            <h3 className="text-[17px] font-semibold">Create Alias</h3>
+            <p className="mt-1 text-[13px] text-muted-foreground">
               Set a display name for <span className="font-medium">{createAliasTarget.email}</span>
             </p>
             <input
@@ -827,7 +831,7 @@ export default function Settings(): JSX.Element {
               value={createAliasName}
               onChange={(e) => setCreateAliasName(e.target.value)}
               placeholder="Display name"
-              className="mb-4 w-full rounded-md border border-input bg-background px-3 py-2"
+              className="mt-4 w-full rounded-lg border border-input-border bg-input px-3 py-2 text-[13px]"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleConfirmCreateAlias()
@@ -838,7 +842,7 @@ export default function Settings(): JSX.Element {
                 }
               }}
             />
-            <div className="flex justify-end gap-2">
+            <div className="mt-5 flex justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={() => {

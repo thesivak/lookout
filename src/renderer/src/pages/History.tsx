@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { format } from 'date-fns'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
-import { History as HistoryIcon, Trash2, Copy, Download, Check, Eye } from 'lucide-react'
+import { History as HistoryIcon, Trash2, Copy, Download, Check, Eye, GitCommit } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
 export default function History(): JSX.Element {
@@ -58,50 +58,59 @@ export default function History(): JSX.Element {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold">History</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-[22px] font-semibold tracking-tight">History</h1>
+        <p className="mt-0.5 text-[13px] text-muted-foreground">
           Browse and access previously generated summaries
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[350px_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         {/* Summary List */}
-        <Card className="p-4">
-          <h2 className="mb-3 text-sm font-medium text-muted-foreground">All Summaries</h2>
+        <Card className="h-fit p-4">
+          <h2 className="mb-3 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+            All Summaries
+          </h2>
           {loading ? (
-            <div className="flex h-64 items-center justify-center">
-              <p className="text-sm text-muted-foreground">Loading...</p>
+            <div className="flex h-48 items-center justify-center">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+                <span className="text-[13px]">Loading...</span>
+              </div>
             </div>
           ) : summaries.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center gap-2">
-              <HistoryIcon className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">No summaries yet</p>
+            <div className="flex h-48 flex-col items-center justify-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                <HistoryIcon className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <p className="text-[13px] text-muted-foreground">No summaries yet</p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-[600px] overflow-y-auto">
+            <div className="max-h-[520px] space-y-1.5 overflow-y-auto">
               {summaries.map((summary) => (
                 <button
                   key={summary.id}
                   onClick={() => setSelectedSummary(summary)}
-                  className={`w-full rounded-lg border p-3 text-left transition-colors ${
+                  className={`w-full rounded-lg p-3 text-left transition-all ${
                     selectedSummary?.id === summary.id
-                      ? 'border-accent bg-accent/10'
-                      : 'border-border hover:bg-muted/50'
+                      ? 'bg-accent text-white'
+                      : 'hover:bg-muted/60'
                   }`}
                 >
-                  <p className="font-medium">
+                  <p className="text-[13px] font-medium">
                     {format(new Date(summary.date_from), 'MMM d')} -{' '}
-                    {format(new Date(summary.date_to), 'MMM d, yyyy')}
+                    {format(new Date(summary.date_to), 'MMM d')}
                   </p>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className={`mt-1 flex items-center gap-2 text-[11px] ${
+                    selectedSummary?.id === summary.id
+                      ? 'text-white/70'
+                      : 'text-muted-foreground'
+                  }`}>
                     <span className="capitalize">{summary.type}</span>
-                    <span>•</span>
+                    <span>·</span>
                     <span>{summary.commit_count} commits</span>
-                    <span>•</span>
-                    <span>{summary.prompt_template}</span>
                   </div>
                 </button>
               ))}
@@ -110,17 +119,17 @@ export default function History(): JSX.Element {
         </Card>
 
         {/* Summary Detail */}
-        <Card className="p-6">
+        <Card className="p-5">
           {selectedSummary ? (
             <div className="space-y-4">
-              {/* Actions */}
-              <div className="flex items-center justify-between">
+              {/* Header */}
+              <div className="flex items-start justify-between border-b border-border/50 pb-4">
                 <div>
-                  <h2 className="text-lg font-medium">
+                  <h2 className="text-[17px] font-semibold">
                     {format(new Date(selectedSummary.date_from), 'MMM d')} -{' '}
                     {format(new Date(selectedSummary.date_to), 'MMM d, yyyy')}
                   </h2>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="mt-0.5 text-[12px] text-muted-foreground">
                     Generated {format(new Date(selectedSummary.created_at), 'MMM d, yyyy h:mm a')}
                   </p>
                 </div>
@@ -132,12 +141,12 @@ export default function History(): JSX.Element {
                   >
                     {copied ? (
                       <>
-                        <Check className="mr-2 h-4 w-4" />
-                        Copied!
+                        <Check className="mr-1.5 h-3.5 w-3.5" />
+                        Copied
                       </>
                     ) : (
                       <>
-                        <Copy className="mr-2 h-4 w-4" />
+                        <Copy className="mr-1.5 h-3.5 w-3.5" />
                         Copy
                       </>
                     )}
@@ -147,12 +156,12 @@ export default function History(): JSX.Element {
                     size="sm"
                     onClick={() => handleExport(selectedSummary)}
                   >
-                    <Download className="mr-2 h-4 w-4" />
+                    <Download className="mr-1.5 h-3.5 w-3.5" />
                     Export
                   </Button>
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     onClick={() => handleDelete(selectedSummary.id)}
                     className="text-muted-foreground hover:text-destructive"
                   >
@@ -162,23 +171,28 @@ export default function History(): JSX.Element {
               </div>
 
               {/* Stats */}
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span>{selectedSummary.commit_count} commits</span>
+              <div className="flex items-center gap-3 text-[12px]">
+                <span className="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1">
+                  <GitCommit className="h-3.5 w-3.5" />
+                  {selectedSummary.commit_count} commits
+                </span>
                 {selectedSummary.merge_count > 0 && (
-                  <span>{selectedSummary.merge_count} merges</span>
+                  <span className="rounded-md bg-muted px-2 py-1">{selectedSummary.merge_count} merges</span>
                 )}
-                <span className="capitalize">{selectedSummary.prompt_template} template</span>
+                <span className="rounded-md bg-muted px-2 py-1 capitalize">{selectedSummary.prompt_template}</span>
               </div>
 
               {/* Content */}
-              <div className="prose prose-invert max-w-none border-t border-border pt-4">
+              <div className="prose max-w-none">
                 <ReactMarkdown>{selectedSummary.content}</ReactMarkdown>
               </div>
             </div>
           ) : (
-            <div className="flex h-64 flex-col items-center justify-center gap-2">
-              <Eye className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
+            <div className="flex h-64 flex-col items-center justify-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted">
+                <Eye className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-[13px] text-muted-foreground">
                 Select a summary to view details
               </p>
             </div>

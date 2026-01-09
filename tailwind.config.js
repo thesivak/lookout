@@ -4,11 +4,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: 'hsl(var(--background))',
+        background: {
+          DEFAULT: 'hsl(var(--background))',
+          secondary: 'hsl(var(--background-secondary))'
+        },
         foreground: 'hsl(var(--foreground))',
+        sidebar: {
+          DEFAULT: 'hsl(var(--sidebar))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          accent: 'hsl(var(--sidebar-accent))'
+        },
         card: {
           DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))'
+          foreground: 'hsl(var(--card-foreground))',
+          hover: 'hsl(var(--card-hover))'
         },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
@@ -16,24 +25,48 @@ export default {
         },
         accent: {
           DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))'
+          foreground: 'hsl(var(--accent-foreground))',
+          subtle: 'hsl(var(--accent-subtle))'
         },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
+        border: {
+          DEFAULT: 'hsl(var(--border))',
+          subtle: 'hsl(var(--border-subtle))'
+        },
+        input: {
+          DEFAULT: 'hsl(var(--input))',
+          border: 'hsl(var(--input-border))'
+        },
         ring: 'hsl(var(--ring))',
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))'
+          foreground: 'hsl(var(--destructive-foreground))',
+          subtle: 'hsl(var(--destructive-subtle))'
         },
         success: {
           DEFAULT: 'hsl(var(--success))',
-          foreground: 'hsl(var(--success-foreground))'
+          foreground: 'hsl(var(--success-foreground))',
+          subtle: 'hsl(var(--success-subtle))'
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+          subtle: 'hsl(var(--warning-subtle))'
         }
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
+        xl: 'var(--radius-xl)',
+        lg: 'var(--radius-lg)',
+        md: 'var(--radius)',
+        sm: 'calc(var(--radius) - 2px)'
+      },
+      boxShadow: {
+        'subtle': 'var(--shadow-subtle)',
+        'medium': 'var(--shadow-medium)',
+        'elevated': 'var(--shadow-elevated)'
+      },
+      spacing: {
+        'titlebar': 'var(--titlebar-height)',
+        'sidebar': 'var(--sidebar-width)'
       }
     }
   },

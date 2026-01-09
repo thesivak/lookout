@@ -23,7 +23,6 @@ interface ParsedSection {
   content: string
 }
 
-// Parse summary into structured sections
 function parseSummary(content: string): ParsedSection[] {
   const sections: ParsedSection[] = []
   const lines = content.split('\n')
@@ -44,7 +43,6 @@ function parseSummary(content: string): ParsedSection[] {
   for (const line of lines) {
     const lowerLine = line.toLowerCase()
 
-    // Detect section headers
     if (line.match(/^#+\s/) || line.match(/^[A-Z][^a-z]*:/)) {
       flushSection()
 
@@ -73,7 +71,6 @@ function parseSummary(content: string): ParsedSection[] {
 
   flushSection()
 
-  // If no sections detected, return whole content as overview
   if (sections.length === 0 && content.trim()) {
     sections.push({
       type: 'overview',
@@ -85,7 +82,6 @@ function parseSummary(content: string): ParsedSection[] {
   return sections
 }
 
-// Extract stats from overview text
 function extractStats(content: string): { commits?: string; lines?: string; repo?: string } {
   const stats: { commits?: string; lines?: string; repo?: string } = {}
 
@@ -101,54 +97,51 @@ function extractStats(content: string): { commits?: string; lines?: string; repo
   return stats
 }
 
-// Section icon and color mapping
 const sectionConfig: Record<ParsedSection['type'], { icon: typeof CheckCircle2; color: string; bg: string }> = {
-  overview: { icon: Zap, color: 'text-accent', bg: 'bg-accent/10' },
-  themes: { icon: Target, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-  accomplishments: { icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10' },
-  technical: { icon: FileCode, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-  assessment: { icon: BarChart3, color: 'text-amber-400', bg: 'bg-amber-400/10' },
-  other: { icon: GitCommit, color: 'text-muted-foreground', bg: 'bg-muted/10' }
+  overview: { icon: Zap, color: 'text-accent', bg: 'bg-accent-subtle' },
+  themes: { icon: Target, color: 'text-blue-500', bg: 'bg-blue-50' },
+  accomplishments: { icon: CheckCircle2, color: 'text-success', bg: 'bg-success-subtle' },
+  technical: { icon: FileCode, color: 'text-purple-500', bg: 'bg-purple-50' },
+  assessment: { icon: BarChart3, color: 'text-amber-500', bg: 'bg-amber-50' },
+  other: { icon: GitCommit, color: 'text-muted-foreground', bg: 'bg-muted' }
 }
 
-// Custom markdown components for better styling
 const markdownComponents = {
   h1: ({ children }: { children?: React.ReactNode }) => (
-    <h1 className="text-xl font-semibold mb-3">{children}</h1>
+    <h1 className="mb-3 text-[17px] font-semibold tracking-tight">{children}</h1>
   ),
   h2: ({ children }: { children?: React.ReactNode }) => (
-    <h2 className="text-lg font-semibold mb-2 mt-4">{children}</h2>
+    <h2 className="mb-2 mt-4 text-[15px] font-semibold tracking-tight">{children}</h2>
   ),
   h3: ({ children }: { children?: React.ReactNode }) => (
-    <h3 className="text-base font-medium mb-2 mt-3">{children}</h3>
+    <h3 className="mb-2 mt-3 text-[14px] font-medium">{children}</h3>
   ),
   p: ({ children }: { children?: React.ReactNode }) => (
-    <p className="mb-3 leading-relaxed">{children}</p>
+    <p className="mb-3 text-[13px] leading-relaxed">{children}</p>
   ),
   ul: ({ children }: { children?: React.ReactNode }) => (
-    <ul className="space-y-2 mb-4">{children}</ul>
+    <ul className="mb-3 space-y-1.5">{children}</ul>
   ),
   ol: ({ children }: { children?: React.ReactNode }) => (
-    <ol className="space-y-2 mb-4 list-decimal list-inside">{children}</ol>
+    <ol className="mb-3 list-inside list-decimal space-y-1.5">{children}</ol>
   ),
   li: ({ children }: { children?: React.ReactNode }) => {
     const text = String(children)
-    // Check if it's an accomplishment item (starts with emoji or checkbox)
     const isAccomplishment = text.match(/^[✅☑️✓⬜]/u)
 
     if (isAccomplishment) {
       return (
-        <li className="flex items-start gap-2 py-1">
-          <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
-          <span>{text.replace(/^[✅☑️✓⬜]\s*/u, '')}</span>
+        <li className="flex items-start gap-2 py-0.5">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-success" />
+          <span className="text-[13px]">{text.replace(/^[✅☑️✓⬜]\s*/u, '')}</span>
         </li>
       )
     }
 
     return (
-      <li className="flex items-start gap-2 py-1">
+      <li className="flex items-start gap-2 py-0.5">
         <span className="text-muted-foreground">•</span>
-        <span>{children}</span>
+        <span className="text-[13px]">{children}</span>
       </li>
     )
   },
@@ -156,33 +149,33 @@ const markdownComponents = {
     <strong className="font-semibold text-foreground">{children}</strong>
   ),
   em: ({ children }: { children?: React.ReactNode }) => (
-    <em className="text-muted-foreground italic">{children}</em>
+    <em className="italic text-muted-foreground">{children}</em>
   ),
   code: ({ children }: { children?: React.ReactNode }) => (
-    <code className="px-1.5 py-0.5 rounded bg-muted text-sm font-mono">{children}</code>
+    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-[12px]">{children}</code>
   ),
   table: ({ children }: { children?: React.ReactNode }) => (
-    <div className="overflow-x-auto my-4 rounded-lg border border-border">
-      <table className="w-full text-sm">{children}</table>
+    <div className="my-3 overflow-x-auto rounded-xl border border-border">
+      <table className="w-full text-[13px]">{children}</table>
     </div>
   ),
   thead: ({ children }: { children?: React.ReactNode }) => (
-    <thead className="bg-muted/50 border-b border-border">{children}</thead>
+    <thead className="border-b border-border bg-muted/50">{children}</thead>
   ),
   tbody: ({ children }: { children?: React.ReactNode }) => (
-    <tbody className="divide-y divide-border">{children}</tbody>
+    <tbody className="divide-y divide-border/50">{children}</tbody>
   ),
   tr: ({ children }: { children?: React.ReactNode }) => (
-    <tr className="hover:bg-muted/30 transition-colors">{children}</tr>
+    <tr className="transition-colors hover:bg-card-hover">{children}</tr>
   ),
   th: ({ children }: { children?: React.ReactNode }) => (
-    <th className="px-4 py-3 text-left font-medium text-muted-foreground">{children}</th>
+    <th className="px-3 py-2 text-left text-[12px] font-medium text-muted-foreground">{children}</th>
   ),
   td: ({ children }: { children?: React.ReactNode }) => (
-    <td className="px-4 py-3">{children}</td>
+    <td className="px-3 py-2">{children}</td>
   ),
   blockquote: ({ children }: { children?: React.ReactNode }) => (
-    <blockquote className="border-l-2 border-accent pl-4 my-4 text-muted-foreground italic">
+    <blockquote className="my-3 border-l-2 border-accent/50 pl-4 italic text-muted-foreground">
       {children}
     </blockquote>
   )
@@ -193,14 +186,14 @@ function SectionCard({ section }: { section: ParsedSection }) {
   const Icon = config.icon
 
   return (
-    <Card className="p-5 transition-all hover:shadow-lg">
-      <div className="flex items-start gap-3 mb-4">
-        <div className={`p-2 rounded-lg ${config.bg}`}>
-          <Icon className={`h-5 w-5 ${config.color}`} />
+    <Card variant="inset" className="p-4 transition-all hover:shadow-subtle">
+      <div className="mb-3 flex items-start gap-2.5">
+        <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${config.bg}`}>
+          <Icon className={`h-4 w-4 ${config.color}`} />
         </div>
-        <h3 className="text-lg font-semibold pt-1">{section.title}</h3>
+        <h3 className="pt-0.5 text-[14px] font-semibold">{section.title}</h3>
       </div>
-      <div className="prose prose-invert max-w-none text-sm">
+      <div className="prose max-w-none">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={markdownComponents}
@@ -216,22 +209,22 @@ function StatsBar({ stats }: { stats: { commits?: string; lines?: string; repo?:
   if (!stats.commits && !stats.lines && !stats.repo) return null
 
   return (
-    <div className="flex flex-wrap gap-4 mb-6">
+    <div className="mb-5 flex flex-wrap gap-2">
       {stats.repo && (
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent">
-          <FileCode className="h-4 w-4" />
+        <div className="flex items-center gap-1.5 rounded-full bg-accent-subtle px-3 py-1 text-[12px] text-accent">
+          <FileCode className="h-3.5 w-3.5" />
           <span className="font-medium">{stats.repo}</span>
         </div>
       )}
       {stats.commits && (
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 text-success">
-          <GitCommit className="h-4 w-4" />
+        <div className="flex items-center gap-1.5 rounded-full bg-success-subtle px-3 py-1 text-[12px] text-success">
+          <GitCommit className="h-3.5 w-3.5" />
           <span className="font-medium">{stats.commits} commits</span>
         </div>
       )}
       {stats.lines && (
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-muted-foreground">
-          <TrendingUp className="h-4 w-4" />
+        <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-[12px] text-muted-foreground">
+          <TrendingUp className="h-3.5 w-3.5" />
           <span className="font-medium">{stats.lines} lines</span>
         </div>
       )}
@@ -243,7 +236,6 @@ export default function SummaryDisplay({ content, isStreaming }: SummaryDisplayP
   const { sections, stats, title, date } = useMemo(() => {
     const parsed = parseSummary(content)
 
-    // Try to extract title and date from first line
     const firstLine = content.split('\n')[0] || ''
     let title = ''
     let date = ''
@@ -254,7 +246,6 @@ export default function SummaryDisplay({ content, isStreaming }: SummaryDisplayP
       date = titleMatch[2] || ''
     }
 
-    // Extract stats from overview section
     const overview = parsed.find(s => s.type === 'overview')
     const stats = overview ? extractStats(overview.content) : {}
 
@@ -265,42 +256,37 @@ export default function SummaryDisplay({ content, isStreaming }: SummaryDisplayP
     return null
   }
 
-  // For very short streaming content, show simple view
   if (isStreaming && content.length < 100) {
     return (
-      <div className="prose prose-invert max-w-none">
+      <div className="prose max-w-none">
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
           {content}
         </ReactMarkdown>
-        <span className="inline-block w-2 h-5 bg-accent animate-pulse ml-1" />
+        <span className="ml-1 inline-block h-4 w-1.5 animate-pulse-subtle rounded-sm bg-accent" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-5">
       {(title || date) && (
-        <div className="border-b border-border pb-4">
-          {title && <h1 className="text-2xl font-bold">{title}</h1>}
-          {date && <p className="text-muted-foreground mt-1">{date}</p>}
+        <div className="border-b border-border/50 pb-4">
+          {title && <h1 className="text-[17px] font-semibold tracking-tight">{title}</h1>}
+          {date && <p className="mt-0.5 text-[12px] text-muted-foreground">{date}</p>}
         </div>
       )}
 
-      {/* Stats badges */}
       <StatsBar stats={stats} />
 
-      {/* Sections as cards */}
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {sections.map((section, i) => (
           <SectionCard key={i} section={section} />
         ))}
       </div>
 
-      {/* Streaming indicator */}
       {isStreaming && (
-        <div className="flex items-center gap-2 text-muted-foreground text-sm">
-          <span className="inline-block w-2 h-2 bg-accent rounded-full animate-pulse" />
+        <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+          <span className="h-2 w-2 animate-pulse-subtle rounded-full bg-accent" />
           Generating...
         </div>
       )}
