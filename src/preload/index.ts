@@ -5,14 +5,76 @@ import type { CommitData, AuthorData, RepoStats, GitUser } from '../main/service
 import type { Summary, GenerateRequest } from '../main/ipc/summaries'
 import type { ContributorProfile } from '../main/ipc/contributors'
 
+// OAuth types for renderer
+interface GitHubOAuthUser {
+  id: number
+  githubId: number
+  login: string
+  name: string | null
+  email: string | null
+  avatarUrl: string | null
+  bio: string | null
+}
+
+interface DeviceCodeResponse {
+  device_code: string
+  user_code: string
+  verification_uri: string
+  expires_in: number
+  interval: number
+}
+
+interface GitHubRepoInfo {
+  id: number
+  name: string
+  fullName: string
+  owner: string
+  description: string | null
+  isPrivate: boolean
+  defaultBranch: string
+  updatedAt: string
+  pushedAt: string | null
+  language: string | null
+  stargazersCount: number
+  forksCount: number
+}
+
 // Custom APIs for renderer
 const api = {
+  oauth: {
+    check: (): Promise<{ authenticated: boolean; user: GitHubOAuthUser | null }> =>
+      ipcRenderer.invoke('oauth:check'),
+    getUser: (): Promise<GitHubOAuthUser | null> =>
+      ipcRenderer.invoke('oauth:get-user'),
+    startDeviceFlow: (): Promise<{ success: boolean; deviceCode?: DeviceCodeResponse; error?: string }> =>
+      ipcRenderer.invoke('oauth:start-device-flow'),
+    openVerificationUrl: (url: string): Promise<void> =>
+      ipcRenderer.invoke('oauth:open-verification-url', url),
+    pollForToken: (deviceCode: string, interval: number): Promise<{ success: boolean; user?: GitHubOAuthUser; error?: string }> =>
+      ipcRenderer.invoke('oauth:poll-for-token', deviceCode, interval),
+    cancelPolling: (): Promise<void> =>
+      ipcRenderer.invoke('oauth:cancel-polling'),
+    logout: (): Promise<{ success: boolean }> =>
+      ipcRenderer.invoke('oauth:logout'),
+    listRepos: (options?: { perPage?: number; page?: number; sort?: 'created' | 'updated' | 'pushed' | 'full_name' }): Promise<{ success: boolean; repos?: GitHubRepoInfo[]; error?: string }> =>
+      ipcRenderer.invoke('oauth:list-repos', options),
+    onPollingStatus: (callback: (status: string) => void) => {
+      const sub = (_: Electron.IpcRendererEvent, status: string) => callback(status)
+      ipcRenderer.on('oauth:polling-status', sub)
+      return () => ipcRenderer.removeListener('oauth:polling-status', sub)
+    }
+  },
+
   repos: {
     list: (): Promise<Repository[]> => ipcRenderer.invoke('repos:list'),
     addDialog: (): Promise<Repository | null> => ipcRenderer.invoke('repos:add-dialog'),
     add: (path: string): Promise<Repository> => ipcRenderer.invoke('repos:add', path),
     remove: (id: number): Promise<void> => ipcRenderer.invoke('repos:remove', id),
-    relocate: (id: number): Promise<Repository | null> => ipcRenderer.invoke('repos:relocate', id)
+    relocate: (id: number): Promise<Repository | null> => ipcRenderer.invoke('repos:relocate', id),
+    importGitHub: (options: { owner: string; repo: string; name: string }): Promise<Repository> =>
+      ipcRenderer.invoke('repos:import-github', options),
+    importGitHubBatch: (repos: Array<{ owner: string; repo: string; name: string }>): Promise<{ success: number; failed: number; errors: string[] }> =>
+      ipcRenderer.invoke('repos:import-github-batch', repos)
   },
 
   settings: {

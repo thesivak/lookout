@@ -64,6 +64,9 @@ function runMigrations(database: Database.Database): void {
 
   // Migration: Add category_breakdown to summaries
   migrateSummaryCategories(database)
+
+  // Migration: Make repos work without local paths (GitHub-centric)
+  migrateGitHubCentricRepos(database)
 }
 
 /**
@@ -203,6 +206,52 @@ function migrateExcludedContributors(database: Database.Database): void {
   database
     .prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('excluded_contributors_migrated', 'true')")
     .run()
+}
+
+/**
+ * Migrate to GitHub-centric repos (make local path optional)
+ */
+function migrateGitHubCentricRepos(database: Database.Database): void {
+  const migrationKey = 'github_centric_repos_migrated'
+  const migrationDone = database
+    .prepare('SELECT value FROM settings WHERE key = ?')
+    .get(migrationKey) as { value: string } | undefined
+
+  if (migrationDone) return
+
+  try {
+    // Make path column nullable and add full_name for GitHub repos
+    // SQLite doesn't support ALTER COLUMN, so we need to work around the UNIQUE constraint
+    // We'll add a new column for GitHub full name (owner/repo)
+    const columns = [
+      'ALTER TABLE repositories ADD COLUMN github_full_name TEXT',
+      'ALTER TABLE repositories ADD COLUMN is_local INTEGER DEFAULT 1'
+    ]
+
+    for (const sql of columns) {
+      try {
+        database.exec(sql)
+      } catch (e) {
+        // Column may already exist, ignore
+      }
+    }
+
+    // Update existing GitHub repos to set github_full_name
+    database.exec(`
+      UPDATE repositories
+      SET github_full_name = github_owner || '/' || github_repo,
+          is_local = 1
+      WHERE github_owner IS NOT NULL AND github_repo IS NOT NULL
+    `)
+
+    database
+      .prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
+      .run(migrationKey, 'true')
+
+    console.log('GitHub-centric repos migration completed')
+  } catch (e) {
+    console.error('Failed to migrate to GitHub-centric repos:', e)
+  }
 }
 
 export function getDatabase(): Database.Database {

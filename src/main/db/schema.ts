@@ -221,4 +221,33 @@ CREATE TABLE IF NOT EXISTS github_issues (
 
 CREATE INDEX IF NOT EXISTS idx_github_issues_repo ON github_issues(repo_id);
 CREATE INDEX IF NOT EXISTS idx_github_issues_state ON github_issues(state);
+
+-- GitHub OAuth Users
+CREATE TABLE IF NOT EXISTS github_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    github_id INTEGER UNIQUE NOT NULL,
+    login TEXT UNIQUE NOT NULL,
+    name TEXT,
+    email TEXT,
+    avatar_url TEXT,
+    bio TEXT,
+    is_current INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- GitHub OAuth Tokens
+CREATE TABLE IF NOT EXISTS github_oauth_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    access_token TEXT NOT NULL,
+    token_type TEXT DEFAULT 'bearer',
+    scope TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES github_users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_github_users_login ON github_users(login);
+CREATE INDEX IF NOT EXISTS idx_github_oauth_user ON github_oauth_tokens(user_id);
 `

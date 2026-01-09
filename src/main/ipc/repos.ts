@@ -12,6 +12,11 @@ export interface Repository {
   created_at: string
   last_accessed_at: string | null
   is_available: boolean
+  is_github?: boolean
+  github_owner?: string | null
+  github_repo?: string | null
+  github_full_name?: string | null
+  is_local?: boolean
 }
 
 function isGitRepository(path: string): boolean {
@@ -59,10 +64,15 @@ export function registerRepoHandlers(): void {
     const rows = db.prepare('SELECT * FROM repositories ORDER BY name ASC').all() as Repository[]
 
     // Check availability for each repo
-    return rows.map((repo) => ({
-      ...repo,
-      is_available: existsSync(repo.path) && isGitRepository(repo.path)
-    }))
+    return rows.map((repo) => {
+      // GitHub-only repos are always available
+      const isGitHubOnly = repo.is_local === 0 || (repo.path && repo.path.startsWith('github://'))
+
+      return {
+        ...repo,
+        is_available: isGitHubOnly ? true : (existsSync(repo.path) && isGitRepository(repo.path))
+      }
+    })
   })
 
   // Add a repository via folder picker
@@ -135,6 +145,70 @@ export function registerRepoHandlers(): void {
   ipcMain.handle('repos:remove', async (_, id: number): Promise<void> => {
     const db = getDatabase()
     db.prepare('DELETE FROM repositories WHERE id = ?').run(id)
+  })
+
+  // Import a GitHub repository (no local clone required)
+  ipcMain.handle('repos:import-github', async (_, options: {
+    owner: string
+    repo: string
+    name: string
+  }): Promise<Repository> => {
+    const db = getDatabase()
+    const { owner, repo, name } = options
+    const fullName = `${owner}/${repo}`
+    // Use a placeholder path for GitHub-only repos
+    const path = `github://${fullName}`
+
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO repositories (path, name, is_github, github_owner, github_repo, github_full_name, is_local)
+        VALUES (?, ?, 1, ?, ?, ?, 0)
+        RETURNING *
+      `)
+      const result = stmt.get(path, name, owner, repo, fullName) as Repository
+      return { ...result, is_available: true }
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes('UNIQUE constraint')) {
+        throw new Error('Repository already added')
+      }
+      throw error
+    }
+  })
+
+  // Batch import multiple GitHub repositories
+  ipcMain.handle('repos:import-github-batch', async (_, repos: Array<{
+    owner: string
+    repo: string
+    name: string
+  }>): Promise<{ success: number; failed: number; errors: string[] }> => {
+    const db = getDatabase()
+    let success = 0
+    let failed = 0
+    const errors: string[] = []
+
+    const insertStmt = db.prepare(`
+      INSERT INTO repositories (path, name, is_github, github_owner, github_repo, github_full_name, is_local)
+      VALUES (?, ?, 1, ?, ?, ?, 0)
+    `)
+
+    for (const { owner, repo, name } of repos) {
+      const fullName = `${owner}/${repo}`
+      const path = `github://${fullName}`
+
+      try {
+        insertStmt.run(path, name, owner, repo, fullName)
+        success++
+      } catch (error: unknown) {
+        failed++
+        if (error instanceof Error && error.message.includes('UNIQUE constraint')) {
+          errors.push(`${fullName} already added`)
+        } else {
+          errors.push(`Failed to add ${fullName}`)
+        }
+      }
+    }
+
+    return { success, failed, errors }
   })
 
   // Update repository path (for relocated repos)

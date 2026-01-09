@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import { useAuth } from '../App'
 import {
   Clock,
   FileText,
@@ -21,9 +22,7 @@ import {
   Edit2,
   Github,
   RefreshCw,
-  Link,
-  Unlink,
-  AlertCircle,
+  LogOut,
   CheckCircle2,
   GitPullRequest,
   MessageSquare,
@@ -143,11 +142,8 @@ export default function Settings(): JSX.Element {
   const [createAliasTarget, setCreateAliasTarget] = useState<UnaliasedContributor | null>(null)
   const [createAliasName, setCreateAliasName] = useState('')
 
-  // GitHub state
-  const [githubToken, setGithubToken] = useState('')
-  const [githubUser, setGithubUser] = useState<GitHubUser | null>(null)
-  const [githubConnecting, setGithubConnecting] = useState(false)
-  const [githubError, setGithubError] = useState<string | null>(null)
+  // GitHub state (using OAuth from auth context)
+  const { user: authUser, logout } = useAuth()
   const [githubRepos, setGithubRepos] = useState<GitHubRepoStatus[]>([])
   const [githubLoading, setGithubLoading] = useState(false)
   const [syncingRepoId, setSyncingRepoId] = useState<number | null>(null)
@@ -224,24 +220,15 @@ export default function Settings(): JSX.Element {
   }
 
   // GitHub handlers
-  const loadGitHubStatus = useCallback(async () => {
+  const loadGitHubRepos = useCallback(async () => {
     try {
       setGithubLoading(true)
-      const [tokenResult] = await Promise.all([
-        window.api.github.checkToken()
-      ])
-      if (tokenResult.connected && tokenResult.user) {
-        setGithubUser(tokenResult.user)
-        // Auto-detect GitHub repos for any that haven't been detected yet
-        await window.api.github.detectRepos()
-      }
-      // Now get the updated repo status
       const reposResult = await window.api.github.getRepoStatus()
       if (reposResult.success) {
         setGithubRepos(reposResult.repos)
       }
     } catch (error) {
-      console.error('Failed to load GitHub status:', error)
+      console.error('Failed to load GitHub repos:', error)
     } finally {
       setGithubLoading(false)
     }
@@ -249,51 +236,16 @@ export default function Settings(): JSX.Element {
 
   useEffect(() => {
     if (activeSection === 'github') {
-      loadGitHubStatus()
+      loadGitHubRepos()
     }
-  }, [activeSection, loadGitHubStatus])
-
-  const handleGitHubConnect = async () => {
-    if (!githubToken.trim()) return
-    try {
-      setGithubConnecting(true)
-      setGithubError(null)
-      const result = await window.api.github.setToken(githubToken.trim())
-      if (result.success && result.user) {
-        setGithubUser(result.user)
-        setGithubToken('')
-        // Auto-detect GitHub repos
-        const detectResult = await window.api.github.detectRepos()
-        if (detectResult.success) {
-          await loadGitHubStatus()
-        }
-      } else {
-        setGithubError(result.error || 'Failed to connect to GitHub')
-      }
-    } catch (error) {
-      setGithubError('Failed to connect to GitHub')
-      console.error('GitHub connection error:', error)
-    } finally {
-      setGithubConnecting(false)
-    }
-  }
-
-  const handleGitHubDisconnect = async () => {
-    try {
-      await window.api.github.disconnect()
-      setGithubUser(null)
-      setGithubRepos([])
-    } catch (error) {
-      console.error('Failed to disconnect GitHub:', error)
-    }
-  }
+  }, [activeSection, loadGitHubRepos])
 
   const handleSyncRepo = async (repoId: number) => {
     try {
       setSyncingRepoId(repoId)
       const result = await window.api.github.syncRepo(repoId)
       if (result.success) {
-        await loadGitHubStatus()
+        await loadGitHubRepos()
       }
     } catch (error) {
       console.error('Failed to sync repo:', error)
@@ -306,7 +258,7 @@ export default function Settings(): JSX.Element {
     try {
       setSyncAllLoading(true)
       await window.api.github.syncAll()
-      await loadGitHubStatus()
+      await loadGitHubRepos()
     } catch (error) {
       console.error('Failed to sync all repos:', error)
     } finally {
@@ -669,98 +621,50 @@ export default function Settings(): JSX.Element {
                   <Github className="h-4 w-4 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-[15px] font-semibold">GitHub Integration</h2>
+                  <h2 className="text-[15px] font-semibold">GitHub Account</h2>
                   <p className="text-[12px] text-muted-foreground">
-                    Connect to GitHub for PRs, reviews, and issue tracking
+                    Your connected GitHub account
                   </p>
                 </div>
-                {githubUser && (
-                  <div className="flex items-center gap-2 rounded-lg bg-success-subtle px-3 py-1.5">
-                    <CheckCircle2 className="h-4 w-4 text-success" />
-                    <span className="text-[12px] font-medium text-success">Connected</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2 rounded-lg bg-success-subtle px-3 py-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span className="text-[12px] font-medium text-success">Connected</span>
+                </div>
               </div>
 
-              {githubLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              ) : githubUser ? (
+              {authUser && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 rounded-xl border border-border bg-background-secondary p-3">
-                    <img
-                      src={`${githubUser.avatarUrl}${githubUser.avatarUrl.includes('?') ? '&' : '?'}s=80`}
-                      alt={githubUser.login}
-                      className="h-10 w-10 min-w-[40px] flex-shrink-0 rounded-full border border-border bg-muted object-cover"
-                      onError={(e) => {
-                        // Fallback to default avatar on error
-                        e.currentTarget.src = `https://github.com/${githubUser.login}.png?size=80`
-                      }}
-                    />
+                    {authUser.avatarUrl && (
+                      <img
+                        src={`${authUser.avatarUrl}${authUser.avatarUrl.includes('?') ? '&' : '?'}s=80`}
+                        alt={authUser.login}
+                        className="h-10 w-10 min-w-[40px] flex-shrink-0 rounded-full border border-border bg-muted object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = `https://github.com/${authUser.login}.png?size=80`
+                        }}
+                      />
+                    )}
                     <div className="flex-1">
                       <p className="text-[13px] font-medium">
-                        {githubUser.name || githubUser.login}
+                        {authUser.name || authUser.login}
                       </p>
-                      <p className="text-[12px] text-muted-foreground">@{githubUser.login}</p>
+                      <p className="text-[12px] text-muted-foreground">@{authUser.login}</p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={handleGitHubDisconnect}>
-                      <Unlink className="mr-1.5 h-3.5 w-3.5" />
-                      Disconnect
+                    <Button variant="outline" size="sm" onClick={logout} className="text-destructive hover:text-destructive">
+                      <LogOut className="mr-1.5 h-3.5 w-3.5" />
+                      Sign Out
                     </Button>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="rounded-lg bg-muted/40 p-3 text-[12px] text-muted-foreground">
-                    <p className="mb-2">
-                      Create a{' '}
-                      <a
-                        href="https://github.com/settings/tokens/new?scopes=repo,read:user"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-accent underline hover:no-underline"
-                      >
-                        Personal Access Token
-                      </a>{' '}
-                      with <code className="rounded bg-muted px-1">repo</code> and{' '}
-                      <code className="rounded bg-muted px-1">read:user</code> scopes.
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <input
-                      type="password"
-                      value={githubToken}
-                      onChange={(e) => setGithubToken(e.target.value)}
-                      placeholder="ghp_xxxxxxxxxxxx"
-                      className="flex-1 rounded-lg border border-input-border bg-input px-3 py-2 font-mono text-[13px] placeholder:text-muted-foreground/50"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleGitHubConnect()
-                      }}
-                    />
-                    <Button onClick={handleGitHubConnect} disabled={!githubToken.trim() || githubConnecting}>
-                      {githubConnecting ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Link className="mr-2 h-4 w-4" />
-                      )}
-                      Connect
-                    </Button>
-                  </div>
-
-                  {githubError && (
-                    <div className="flex items-center gap-2 rounded-lg bg-destructive-subtle p-3 text-[12px] text-destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      {githubError}
-                    </div>
-                  )}
+                  <p className="text-[12px] text-muted-foreground">
+                    Signing out will require you to log in again with GitHub.
+                  </p>
                 </div>
               )}
             </Card>
 
             {/* Repository sync */}
-            {githubUser && (
+            {authUser && (
               <Card className="p-5">
                 <div className="mb-4 flex items-center justify-between">
                   <div>

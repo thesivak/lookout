@@ -6,6 +6,8 @@ import { registerIpcHandlers } from './ipc'
 import { createTray, destroyTray, updateTrayMenu } from './tray'
 import { startScheduler, stopScheduler } from './services/scheduler'
 import { setMainWindow, runBackgroundPregeneration } from './services/pregeneration'
+import { initializeOAuth } from './services/oauth'
+import { setOAuthMainWindow } from './ipc/oauth'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -78,11 +80,25 @@ if (!gotTheLock) {
     // Initialize database
     initDatabase()
 
+    // Initialize OAuth (restore session if token exists)
+    initializeOAuth().then((user) => {
+      if (user) {
+        console.log(`OAuth initialized for user: ${user.login}`)
+      }
+    }).catch((error) => {
+      console.error('Failed to initialize OAuth:', error)
+    })
+
     // Register IPC handlers
     registerIpcHandlers()
 
     // Create window
     createWindow()
+
+    // Set main window for OAuth callbacks
+    if (mainWindow) {
+      setOAuthMainWindow(mainWindow)
+    }
 
     // Create application menu with shortcuts
     const template: Electron.MenuItemConstructorOptions[] = [

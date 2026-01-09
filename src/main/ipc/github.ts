@@ -6,11 +6,6 @@ import { ipcMain } from 'electron'
 import { subDays } from 'date-fns'
 import {
   initOctokit,
-  validateToken,
-  getGitHubToken,
-  saveGitHubToken,
-  removeGitHubToken,
-  detectGitHubRepos,
   syncRepository,
   getPRsInRange,
   getReviewsInRange,
@@ -24,77 +19,80 @@ import {
   getTopCollaborators,
   getEnhancedReviewMetrics
 } from '../services/collaboration'
+import { getAuthenticatedOctokit, getCurrentUser, getStoredToken } from '../services/oauth'
+
+/**
+ * Initialize Octokit from OAuth token if available
+ */
+function ensureOctokitInitialized(): boolean {
+  const user = getCurrentUser()
+  if (!user) return false
+
+  const token = getStoredToken(user.id)
+  if (!token) return false
+
+  // Check if Octokit is already initialized
+  const octokit = getAuthenticatedOctokit()
+  if (octokit) return true
+
+  // Initialize from stored OAuth token
+  initOctokit(token)
+  return true
+}
 
 export function registerGitHubHandlers(): void {
   /**
-   * Set GitHub token
+   * Legacy: Set GitHub token (kept for backwards compatibility, redirects to OAuth)
    */
-  ipcMain.handle('github:set-token', async (_, token: string) => {
-    try {
-      // Validate token first
-      const user = await validateToken(token)
-      if (!user) {
-        return { success: false, error: 'Invalid token' }
-      }
-
-      // Save token and initialize Octokit
-      saveGitHubToken(token)
-      initOctokit(token)
-
-      return { success: true, user }
-    } catch (error) {
-      console.error('Failed to set GitHub token:', error)
-      return { success: false, error: String(error) }
-    }
+  ipcMain.handle('github:set-token', async () => {
+    // This is now handled by OAuth
+    return { success: false, error: 'Please use GitHub OAuth login instead' }
   })
 
   /**
-   * Check if GitHub token is set and valid
+   * Legacy: Check if GitHub token is set and valid (uses OAuth now)
    */
   ipcMain.handle('github:check-token', async () => {
     try {
-      const token = getGitHubToken()
-      if (!token) {
+      const user = getCurrentUser()
+      if (!user) {
         return { connected: false }
       }
 
-      const user = await validateToken(token)
-      if (user) {
-        initOctokit(token)
-        return { connected: true, user }
+      const initialized = ensureOctokitInitialized()
+      if (initialized) {
+        return {
+          connected: true,
+          user: {
+            login: user.login,
+            name: user.name,
+            email: user.email,
+            avatarUrl: user.avatarUrl
+          }
+        }
       }
 
       return { connected: false }
     } catch (error) {
-      console.error('Failed to check GitHub token:', error)
+      console.error('Failed to check GitHub connection:', error)
       return { connected: false }
     }
   })
 
   /**
-   * Remove GitHub token
+   * Legacy: Disconnect GitHub (handled by OAuth logout now)
    */
   ipcMain.handle('github:disconnect', async () => {
-    try {
-      removeGitHubToken()
-      return { success: true }
-    } catch (error) {
-      console.error('Failed to disconnect GitHub:', error)
-      return { success: false, error: String(error) }
-    }
+    // This is now handled by OAuth logout
+    return { success: true }
   })
 
   /**
-   * Detect which repositories are GitHub repos
+   * Legacy: Detect which repositories are GitHub repos (not needed with OAuth import)
    */
   ipcMain.handle('github:detect-repos', async () => {
-    try {
-      const repos = await detectGitHubRepos()
-      return { success: true, repos }
-    } catch (error) {
-      console.error('Failed to detect GitHub repos:', error)
-      return { success: false, error: String(error), repos: [] }
-    }
+    // Not needed with GitHub-centric approach
+    return { success: true, repos: [] }
   })
 
   /**
@@ -161,12 +159,10 @@ export function registerGitHubHandlers(): void {
         return { success: false, error: 'Repository not found or not a GitHub repo' }
       }
 
-      // Initialize Octokit if needed
-      const token = getGitHubToken()
-      if (!token) {
-        return { success: false, error: 'GitHub not connected' }
+      // Initialize Octokit from OAuth token
+      if (!ensureOctokitInitialized()) {
+        return { success: false, error: 'GitHub not connected. Please log in again.' }
       }
-      initOctokit(token)
 
       // Sync last 30 days of data
       const since = subDays(new Date(), 30)
@@ -190,11 +186,10 @@ export function registerGitHubHandlers(): void {
    */
   ipcMain.handle('github:sync-all', async () => {
     try {
-      const token = getGitHubToken()
-      if (!token) {
-        return { success: false, error: 'GitHub not connected' }
+      // Initialize Octokit from OAuth token
+      if (!ensureOctokitInitialized()) {
+        return { success: false, error: 'GitHub not connected. Please log in again.' }
       }
-      initOctokit(token)
 
       const db = getDatabase()
       const repos = db
