@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 5%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 100%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 64%;
+
+    --accent: 234 58% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 234 58% 58%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+
+  /* macOS titlebar drag region */
+  .titlebar-drag-region {
+    -webkit-app-region: drag;
+  }
+
+  .titlebar-no-drag {
+    -webkit-app-region: no-drag;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Prose styling for markdown content */
+@layer components {
+  .prose {
+    @apply text-foreground leading-relaxed;
+  }
+
+  .prose-invert {
+    @apply text-foreground;
+  }
+
+  .prose h1 {
+    @apply text-2xl font-bold mb-4 mt-6 first:mt-0;
+  }
+
+  .prose h2 {
+    @apply text-xl font-semibold mb-3 mt-5;
+  }
+
+  .prose h3 {
+    @apply text-lg font-medium mb-2 mt-4;
+  }
+
+  .prose p {
+    @apply mb-3;
+  }
+
+  .prose strong {
+    @apply font-semibold text-foreground;
+  }
+
+  .prose em {
+    @apply text-muted-foreground;
+  }
+
+  .prose a {
+    @apply text-accent underline underline-offset-2 hover:text-accent/80;
+  }
+
+  .prose code {
+    @apply px-1.5 py-0.5 rounded bg-muted text-sm font-mono;
+  }
+
+  .prose pre {
+    @apply p-4 rounded-lg bg-muted overflow-x-auto my-4;
+  }
+
+  .prose pre code {
+    @apply p-0 bg-transparent;
+  }
+
+  .prose ul {
+    @apply my-3 space-y-1;
+  }
+
+  .prose ol {
+    @apply my-3 space-y-1 list-decimal list-inside;
+  }
+
+  .prose li {
+    @apply text-foreground;
+  }
+
+  .prose blockquote {
+    @apply border-l-2 border-accent pl-4 my-4 text-muted-foreground italic;
+  }
+
+  .prose hr {
+    @apply border-border my-6;
+  }
+
+  .prose img {
+    @apply rounded-lg my-4;
+  }
+
+  .prose table {
+    @apply w-full text-sm my-4;
+  }
+
+  .prose thead {
+    @apply border-b border-border;
+  }
+
+  .prose th {
+    @apply px-4 py-2 text-left font-medium text-muted-foreground;
+  }
+
+  .prose td {
+    @apply px-4 py-2 border-b border-border;
+  }
+
+  .prose tr:last-child td {
+    @apply border-b-0;
+  }
+}

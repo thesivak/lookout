@@ -1,0 +1,39 @@
+appId: com.lookout.app
+productName: Lookout
+directories:
+  buildResources: resources
+  output: release
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.*'
+  - '!{.eslintrc.cjs,.eslintrc.js,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.*.json}'
+asarUnpack:
+  - resources/**
+  - '**/*.node'
+mac:
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    - NSDocumentsFolderUsageDescription: Application requests access to Documents folder.
+    - NSDownloadsFolderUsageDescription: Application requests access to Downloads folder.
+  notarize: false
+  target:
+    - dmg
+    - zip
+dmg:
+  artifactName: '${name}-${version}-${arch}.${ext}'
+linux:
+  target:
+    - AppImage
+    - snap
+    - deb
+  maintainer: lookout@example.com
+  category: Development
+appImage:
+  artifactName: '${name}-${version}.${ext}'
+npmRebuild: true
+publish:
+  provider: generic
+  url: https://example.com/
