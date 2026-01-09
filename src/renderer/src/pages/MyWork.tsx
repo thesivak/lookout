@@ -49,24 +49,18 @@ export default function MyWork(): JSX.Element {
   // Listen for trigger-generate from tray/shortcuts
   useEffect(() => {
     const unsubTrigger = window.api.app.onTriggerGenerate(() => {
-      // Auto-generate when triggered externally
-      if (!generating) {
-        handleGenerate()
-      }
+      handleGenerate()
     })
 
     const unsubScheduled = window.api.app.onScheduledGeneration(() => {
-      // Auto-generate when scheduled
-      if (!generating) {
-        handleGenerate()
-      }
+      handleGenerate()
     })
 
     return () => {
       unsubTrigger()
       unsubScheduled()
     }
-  }, [generating, handleGenerate])
+  }, [handleGenerate])
 
   // Set up event listeners for generation progress
   useEffect(() => {
@@ -100,6 +94,8 @@ export default function MyWork(): JSX.Element {
   }, [])
 
   const handleGenerate = useCallback(() => {
+    if (generating) return
+
     const range = getDateRange(dateRange)
     setGenerating(true)
     setError(null)
@@ -107,7 +103,6 @@ export default function MyWork(): JSX.Element {
     setStreamingContent('')
     setProgress({ message: 'Starting generation...' })
 
-    // Generate for all commits if no git user configured, or filter by user email
     window.api.summaries.generate({
       type: 'personal',
       dateFrom: range.from.toISOString(),
@@ -115,7 +110,7 @@ export default function MyWork(): JSX.Element {
       template,
       authorEmail: gitUser?.email || undefined
     })
-  }, [dateRange, template, gitUser])
+  }, [dateRange, template, gitUser, generating])
 
   const handleCopy = useCallback(async () => {
     const content = summary?.content || streamingContent

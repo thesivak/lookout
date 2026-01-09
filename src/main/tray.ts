@@ -1,11 +1,24 @@
-import { Tray, Menu, nativeImage, BrowserWindow, app } from 'electron'
+import { Tray, Menu, nativeImage, BrowserWindow, app, MenuItemConstructorOptions } from 'electron'
 import { join } from 'path'
 import { existsSync } from 'fs'
 
 let tray: Tray | null = null
 
-// Create a simple eye/lookout icon as base64 PNG (16x16 template)
 const ICON_BASE64 = `iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAADCSURBVDiNpdMxSkNBFAXQ80HQRki1A0vtLQJuILgE1+AGcgeWFm4hhaUgWFhYCIJgYaGNWIigBH/xwZB8k1ycYuDNnTtz5w3/hBPc4RkfWGnS1hPucYMH3OIZb1hP4C1c4wXvWMcWZuMIrOM46c/xhTXs4whH2M3gbbbCj7HAESYxxGEz8oJJW5xjD7uYZAY6OMAP9nGKSYwhYIpxHOMEY4zjHdO2gjU84BAb2MEYYwi4wC02sY0xxHCFS2xghTHE8A1QCCr+Bqz6VwAAAABJRU5ErkJggg==`
+
+function createNavigationItem(
+  mainWindow: BrowserWindow,
+  label: string,
+  route: string
+): MenuItemConstructorOptions {
+  return {
+    label,
+    click: (): void => {
+      mainWindow.show()
+      mainWindow.webContents.send('navigate', route)
+    }
+  }
+}
 
 export function createTray(mainWindow: BrowserWindow): Tray {
   // Create tray icon - use template image for macOS
@@ -31,14 +44,14 @@ export function createTray(mainWindow: BrowserWindow): Tray {
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Open Lookout',
-      click: () => {
+      click: (): void => {
         mainWindow.show()
         mainWindow.focus()
       }
     },
     {
       label: 'Generate Summary',
-      click: () => {
+      click: (): void => {
         mainWindow.show()
         mainWindow.focus()
         mainWindow.webContents.send('navigate', 'my-work')
@@ -46,39 +59,15 @@ export function createTray(mainWindow: BrowserWindow): Tray {
       }
     },
     { type: 'separator' },
-    {
-      label: 'Dashboard',
-      click: () => {
-        mainWindow.show()
-        mainWindow.webContents.send('navigate', 'dashboard')
-      }
-    },
-    {
-      label: 'My Work',
-      click: () => {
-        mainWindow.show()
-        mainWindow.webContents.send('navigate', 'my-work')
-      }
-    },
-    {
-      label: 'History',
-      click: () => {
-        mainWindow.show()
-        mainWindow.webContents.send('navigate', 'history')
-      }
-    },
+    createNavigationItem(mainWindow, 'Dashboard', 'dashboard'),
+    createNavigationItem(mainWindow, 'My Work', 'my-work'),
+    createNavigationItem(mainWindow, 'History', 'history'),
     { type: 'separator' },
-    {
-      label: 'Settings',
-      click: () => {
-        mainWindow.show()
-        mainWindow.webContents.send('navigate', 'settings')
-      }
-    },
+    createNavigationItem(mainWindow, 'Settings', 'settings'),
     { type: 'separator' },
     {
       label: 'Quit Lookout',
-      click: () => {
+      click: (): void => {
         app.quit()
       }
     }
@@ -109,17 +98,19 @@ export function destroyTray(): void {
 export function updateTrayMenu(mainWindow: BrowserWindow, scheduledEnabled: boolean): void {
   if (!tray) return
 
+  const scheduledLabel = scheduledEnabled ? 'Scheduled Generation (on)' : 'Scheduled Generation'
+
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Open Lookout',
-      click: () => {
+      click: (): void => {
         mainWindow.show()
         mainWindow.focus()
       }
     },
     {
       label: 'Generate Summary Now',
-      click: () => {
+      click: (): void => {
         mainWindow.show()
         mainWindow.focus()
         mainWindow.webContents.send('navigate', 'my-work')
@@ -127,44 +118,17 @@ export function updateTrayMenu(mainWindow: BrowserWindow, scheduledEnabled: bool
       }
     },
     { type: 'separator' },
-    {
-      label: scheduledEnabled ? '✓ Scheduled Generation' : 'Scheduled Generation',
-      enabled: false
-    },
+    { label: scheduledLabel, enabled: false },
     { type: 'separator' },
-    {
-      label: 'Dashboard',
-      click: () => {
-        mainWindow.show()
-        mainWindow.webContents.send('navigate', 'dashboard')
-      }
-    },
-    {
-      label: 'My Work',
-      click: () => {
-        mainWindow.show()
-        mainWindow.webContents.send('navigate', 'my-work')
-      }
-    },
-    {
-      label: 'History',
-      click: () => {
-        mainWindow.show()
-        mainWindow.webContents.send('navigate', 'history')
-      }
-    },
+    createNavigationItem(mainWindow, 'Dashboard', 'dashboard'),
+    createNavigationItem(mainWindow, 'My Work', 'my-work'),
+    createNavigationItem(mainWindow, 'History', 'history'),
     { type: 'separator' },
-    {
-      label: 'Settings',
-      click: () => {
-        mainWindow.show()
-        mainWindow.webContents.send('navigate', 'settings')
-      }
-    },
+    createNavigationItem(mainWindow, 'Settings', 'settings'),
     { type: 'separator' },
     {
       label: 'Quit Lookout',
-      click: () => {
+      click: (): void => {
         app.quit()
       }
     }

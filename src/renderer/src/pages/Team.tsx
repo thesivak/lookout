@@ -164,7 +164,7 @@ export default function Team(): JSX.Element {
           </div>
         ) : (
           <div className="space-y-3">
-            {authors.map((author, index) => (
+            {authors.map((author) => (
               <div
                 key={author.email}
                 className="flex items-center justify-between rounded-lg border border-border p-4"

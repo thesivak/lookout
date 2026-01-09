@@ -6,7 +6,7 @@ let lastCheckDate: string | null = null
 
 interface SchedulerConfig {
   enabled: boolean
-  time: string // HH:mm format
+  time: string
 }
 
 function getSchedulerConfig(): SchedulerConfig {
@@ -29,15 +29,12 @@ function shouldRunToday(): boolean {
   const db = getDb()
   const today = new Date().toISOString().split('T')[0]
 
-  // Check if we already generated a scheduled summary today
   const existing = db
     .prepare(
-      `SELECT id FROM summ
-
-aries
-     WHERE date(created_at) = date(?)
-     AND is_scheduled = 1
-     LIMIT 1`
+      `SELECT id FROM summaries
+       WHERE date(created_at) = date(?)
+       AND is_scheduled = 1
+       LIMIT 1`
     )
     .get(today) as { id: number } | undefined
 
@@ -50,9 +47,6 @@ function isTimeToRun(scheduledTime: string): boolean {
 
   const currentHours = now.getHours()
   const currentMinutes = now.getMinutes()
-
-  // Check if we're within the scheduled minute
-  // Also check if we haven't already checked this minute
   const currentTimeStr = `${currentHours}:${currentMinutes}`
 
   if (currentTimeStr === lastCheckDate) {
@@ -68,7 +62,6 @@ function isTimeToRun(scheduledTime: string): boolean {
 }
 
 export function startScheduler(mainWindow: BrowserWindow): void {
-  // Check every minute
   schedulerInterval = setInterval(() => {
     const config = getSchedulerConfig()
 
@@ -80,7 +73,7 @@ export function startScheduler(mainWindow: BrowserWindow): void {
       console.log('Scheduler: Triggering daily summary generation')
       triggerScheduledGeneration(mainWindow)
     }
-  }, 60000) // Check every minute
+  }, 60000)
 
   console.log('Scheduler started')
 }
@@ -99,10 +92,8 @@ export function restartScheduler(mainWindow: BrowserWindow): void {
 }
 
 function triggerScheduledGeneration(mainWindow: BrowserWindow): void {
-  // Send event to renderer to trigger generation
   mainWindow.webContents.send('scheduled-generation')
 
-  // Show notification
   showNotification(
     'Daily Summary',
     'Generating your daily work summary...',
