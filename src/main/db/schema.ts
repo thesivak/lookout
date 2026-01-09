@@ -94,4 +94,25 @@ CREATE INDEX IF NOT EXISTS idx_summaries_type ON summaries(type);
 CREATE INDEX IF NOT EXISTS idx_summaries_author ON summaries(author_id);
 CREATE INDEX IF NOT EXISTS idx_authors_email ON authors(email);
 CREATE INDEX IF NOT EXISTS idx_generation_logs_status ON generation_logs(status);
+
+-- Contributor profiles for aliasing multiple emails under one identity
+CREATE TABLE IF NOT EXISTS contributor_profiles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    display_name TEXT NOT NULL,
+    is_excluded INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Email-to-profile mapping
+CREATE TABLE IF NOT EXISTS contributor_emails (
+    email TEXT PRIMARY KEY,
+    profile_id INTEGER NOT NULL,
+    is_primary INTEGER DEFAULT 0,
+    original_name TEXT NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (profile_id) REFERENCES contributor_profiles(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_contributor_emails_profile ON contributor_emails(profile_id);
 `

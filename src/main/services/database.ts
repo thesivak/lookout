@@ -44,9 +44,83 @@ export function initDatabase(): Database.Database {
   // Create tables
   db.exec(schema)
 
+  // Run migrations
+  runMigrations(db)
+
   console.log(`Database initialized at: ${dbPath}`)
 
   return db
+}
+
+/**
+ * Run database migrations
+ */
+function runMigrations(database: Database.Database): void {
+  // Migration: Convert excluded_contributors setting to contributor_profiles
+  migrateExcludedContributors(database)
+}
+
+/**
+ * Migrate existing excluded_contributors JSON setting to contributor_profiles table
+ */
+function migrateExcludedContributors(database: Database.Database): void {
+  // Check if migration already done
+  const migrationDone = database
+    .prepare("SELECT value FROM settings WHERE key = 'excluded_contributors_migrated'")
+    .get() as { value: string } | undefined
+
+  if (migrationDone) return
+
+  // Get old excluded_contributors setting
+  const oldSetting = database
+    .prepare("SELECT value FROM settings WHERE key = 'excluded_contributors'")
+    .get() as { value: string } | undefined
+
+  if (oldSetting?.value) {
+    try {
+      const excludedEmails: string[] = JSON.parse(oldSetting.value)
+
+      if (excludedEmails.length > 0) {
+        const transaction = database.transaction(() => {
+          for (const email of excludedEmails) {
+            // Check if email already has a profile
+            const existing = database
+              .prepare('SELECT profile_id FROM contributor_emails WHERE email = ?')
+              .get(email.toLowerCase()) as { profile_id: number } | undefined
+
+            if (existing) {
+              // Mark existing profile as excluded
+              database
+                .prepare('UPDATE contributor_profiles SET is_excluded = 1 WHERE id = ?')
+                .run(existing.profile_id)
+            } else {
+              // Create a new excluded profile (use email as display name initially)
+              const result = database
+                .prepare('INSERT INTO contributor_profiles (display_name, is_excluded) VALUES (?, 1)')
+                .run(email)
+
+              const profileId = result.lastInsertRowid
+
+              // Link the email to the profile
+              database
+                .prepare('INSERT INTO contributor_emails (email, profile_id, is_primary, original_name) VALUES (?, ?, 1, ?)')
+                .run(email.toLowerCase(), profileId, email)
+            }
+          }
+        })
+
+        transaction()
+        console.log(`Migrated ${excludedEmails.length} excluded contributors to profiles`)
+      }
+    } catch (e) {
+      console.error('Failed to migrate excluded contributors:', e)
+    }
+  }
+
+  // Mark migration as complete
+  database
+    .prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('excluded_contributors_migrated', 'true')")
+    .run()
 }
 
 export function getDatabase(): Database.Database {

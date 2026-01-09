@@ -91,6 +91,23 @@ interface GenerationProgress {
   progress?: number
 }
 
+interface ContributorEmail {
+  email: string
+  profileId: number
+  isPrimary: boolean
+  originalName: string
+  createdAt: string
+}
+
+interface ContributorProfile {
+  id: number
+  displayName: string
+  isExcluded: boolean
+  emails: ContributorEmail[]
+  createdAt: string
+  updatedAt: string
+}
+
 interface Api {
   app: {
     setAutoLaunch: (enabled: boolean) => Promise<boolean>
@@ -148,6 +165,28 @@ interface Api {
       dateTo: string,
       authorEmail?: string
     ) => Promise<Record<string, number>>
+  }
+  contributors: {
+    listProfiles: () => Promise<ContributorProfile[]>
+    getProfile: (id: number) => Promise<ContributorProfile | null>
+    createProfile: (
+      displayName: string,
+      emails: Array<{ email: string; originalName: string }>
+    ) => Promise<ContributorProfile>
+    updateProfile: (id: number, displayName: string) => Promise<ContributorProfile | null>
+    deleteProfile: (id: number) => Promise<void>
+    addEmailToProfile: (profileId: number, email: string, originalName: string) => Promise<void>
+    removeEmail: (email: string) => Promise<void>
+    setPrimaryEmail: (profileId: number, email: string) => Promise<void>
+    setExcluded: (id: number, isExcluded: boolean) => Promise<void>
+    getExcludedEmails: () => Promise<string[]>
+    getDisplayNameMap: () => Promise<Record<string, string>>
+    getProfileByEmail: (email: string) => Promise<ContributorProfile | null>
+    quickExclude: (email: string, originalName: string) => Promise<ContributorProfile>
+    merge: (
+      displayName: string,
+      emails: Array<{ email: string; originalName: string }>
+    ) => Promise<ContributorProfile>
   }
   summaries: {
     checkClaude: () => Promise<boolean>

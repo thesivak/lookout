@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import {
   getGlobalGitUser,
+  getRepoGitUser,
   getCommitsWithStats,
   getAllAuthors,
   fetchAll,
@@ -14,9 +15,28 @@ import {
 import { getDatabase } from '../services/database'
 
 export function registerGitHandlers(): void {
-  // Get global git user
+  // Get git user (tries global config, then repo configs)
   ipcMain.handle('git:get-user', async (): Promise<GitUser> => {
-    return getGlobalGitUser()
+    // Try global config first
+    const globalUser = getGlobalGitUser()
+    if (globalUser.email) {
+      return globalUser
+    }
+
+    // Fallback: try to get user from one of the imported repositories
+    const db = getDatabase()
+    const repos = db
+      .prepare('SELECT path FROM repositories WHERE is_available = 1 LIMIT 5')
+      .all() as { path: string }[]
+
+    for (const repo of repos) {
+      const repoUser = getRepoGitUser(repo.path)
+      if (repoUser.email) {
+        return repoUser
+      }
+    }
+
+    return { name: '', email: '' }
   })
 
   // Get commits from a single repo

@@ -3,6 +3,7 @@ import type { Repository } from '../main/ipc/repos'
 import type { Settings } from '../main/ipc/settings'
 import type { CommitData, AuthorData, RepoStats, GitUser } from '../main/services/git'
 import type { Summary, GenerateRequest } from '../main/ipc/summaries'
+import type { ContributorProfile } from '../main/ipc/contributors'
 
 // Custom APIs for renderer
 const api = {
@@ -87,6 +88,43 @@ const api = {
       ipcRenderer.on('scheduled-generation', sub)
       return () => ipcRenderer.removeListener('scheduled-generation', sub)
     }
+  },
+
+  contributors: {
+    listProfiles: (): Promise<ContributorProfile[]> =>
+      ipcRenderer.invoke('contributors:list-profiles'),
+    getProfile: (id: number): Promise<ContributorProfile | null> =>
+      ipcRenderer.invoke('contributors:get-profile', id),
+    createProfile: (
+      displayName: string,
+      emails: Array<{ email: string; originalName: string }>
+    ): Promise<ContributorProfile> =>
+      ipcRenderer.invoke('contributors:create-profile', displayName, emails),
+    updateProfile: (id: number, displayName: string): Promise<ContributorProfile | null> =>
+      ipcRenderer.invoke('contributors:update-profile', id, displayName),
+    deleteProfile: (id: number): Promise<void> =>
+      ipcRenderer.invoke('contributors:delete-profile', id),
+    addEmailToProfile: (profileId: number, email: string, originalName: string): Promise<void> =>
+      ipcRenderer.invoke('contributors:add-email-to-profile', profileId, email, originalName),
+    removeEmail: (email: string): Promise<void> =>
+      ipcRenderer.invoke('contributors:remove-email', email),
+    setPrimaryEmail: (profileId: number, email: string): Promise<void> =>
+      ipcRenderer.invoke('contributors:set-primary-email', profileId, email),
+    setExcluded: (id: number, isExcluded: boolean): Promise<void> =>
+      ipcRenderer.invoke('contributors:set-excluded', id, isExcluded),
+    getExcludedEmails: (): Promise<string[]> =>
+      ipcRenderer.invoke('contributors:get-excluded-emails'),
+    getDisplayNameMap: (): Promise<Record<string, string>> =>
+      ipcRenderer.invoke('contributors:get-display-name-map'),
+    getProfileByEmail: (email: string): Promise<ContributorProfile | null> =>
+      ipcRenderer.invoke('contributors:get-profile-by-email', email),
+    quickExclude: (email: string, originalName: string): Promise<ContributorProfile> =>
+      ipcRenderer.invoke('contributors:quick-exclude', email, originalName),
+    merge: (
+      displayName: string,
+      emails: Array<{ email: string; originalName: string }>
+    ): Promise<ContributorProfile> =>
+      ipcRenderer.invoke('contributors:merge', displayName, emails)
   },
 
   summaries: {

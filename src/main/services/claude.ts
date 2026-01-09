@@ -153,8 +153,16 @@ export async function* generateSummary(
     proc.stdin.end()
   }
 
-  // Track full response
+  // Track full response and stderr
   let fullResponse = ''
+  let stderr = ''
+
+  // Capture stderr in parallel (non-blocking)
+  if (proc.stderr) {
+    proc.stderr.on('data', (data: Buffer) => {
+      stderr += data.toString()
+    })
+  }
 
   // Parse streaming JSON output
   if (proc.stdout) {
@@ -191,15 +199,6 @@ export async function* generateSummary(
       } catch {
         // Non-JSON line, skip
       }
-    }
-  }
-
-  // Capture stderr for errors
-  let stderr = ''
-  if (proc.stderr) {
-    const errRl = createInterface({ input: proc.stderr })
-    for await (const line of errRl) {
-      stderr += line + '\n'
     }
   }
 
@@ -405,7 +404,9 @@ export function buildUserPrompt(
   }>,
   dateFrom: Date,
   dateTo: Date,
-  authorName?: string
+  authorName?: string,
+  isTeamSummary = false,
+  displayNameMap: Record<string, string> = {}
 ): string {
   const dateRange = `${format(dateFrom, 'MMM d, yyyy')} to ${format(dateTo, 'MMM d, yyyy')}`
 
@@ -413,7 +414,66 @@ export function buildUserPrompt(
 
 Date Range: ${dateRange}
 ${authorName ? `Author: ${authorName}` : ''}
+`
 
+  // For team summaries, calculate and include per-author stats
+  if (isTeamSummary) {
+    const authorStats = new Map<string, {
+      email: string
+      name: string
+      commits: number
+      additions: number
+      deletions: number
+      filesChanged: number
+    }>()
+
+    // Aggregate stats by author (group by display name if aliased)
+    for (const repo of commits) {
+      for (const commit of repo.commits) {
+        const emailKey = commit.authorEmail.toLowerCase()
+        // Use display name from map if available, otherwise use git name
+        const displayName = displayNameMap[emailKey] || commit.authorName
+        // Group by display name to merge aliased contributors
+        const key = displayName.toLowerCase()
+        const existing = authorStats.get(key)
+        if (existing) {
+          existing.commits++
+          existing.additions += commit.additions
+          existing.deletions += commit.deletions
+          existing.filesChanged += commit.filesChanged
+        } else {
+          authorStats.set(key, {
+            email: emailKey,
+            name: displayName,
+            commits: 1,
+            additions: commit.additions,
+            deletions: commit.deletions,
+            filesChanged: commit.filesChanged
+          })
+        }
+      }
+    }
+
+    // Sort by commits descending
+    const sortedAuthors = Array.from(authorStats.values()).sort((a, b) => b.commits - a.commits)
+
+    prompt += `
+## Team Statistics
+
+| Developer | Commits | Lines Added | Lines Removed | Files Changed |
+|-----------|---------|-------------|---------------|---------------|
+`
+    for (const author of sortedAuthors) {
+      prompt += `| ${author.name} | ${author.commits} | +${author.additions} | -${author.deletions} | ${author.filesChanged} |\n`
+    }
+
+    prompt += `
+**IMPORTANT:** You MUST include this statistics table at the very beginning of your summary, formatted as a markdown table. This is a mandatory requirement.
+
+`
+  }
+
+  prompt += `
 ## Repositories and Commits
 
 `
@@ -440,7 +500,18 @@ ${authorName ? `Author: ${authorName}` : ''}
     prompt += `\n**Summary:** ${repo.commits.length} commits, ${mergeCount} merges, +${totalAdditions}/-${totalDeletions} lines\n\n`
   }
 
-  prompt += `
+  if (isTeamSummary) {
+    prompt += `
+## Instructions
+
+Please generate a comprehensive TEAM summary of this work. You MUST:
+1. Start with a "Team Statistics" section containing the developer breakdown table provided above
+2. Summarize the main themes and areas of work
+3. Highlight key accomplishments by the team
+4. Note notable technical changes
+5. Provide an overall assessment of team productivity and impact`
+  } else {
+    prompt += `
 ## Instructions
 
 Please generate a comprehensive summary of this work. Focus on:
@@ -448,6 +519,7 @@ Please generate a comprehensive summary of this work. Focus on:
 2. Key accomplishments
 3. Notable technical changes
 4. Overall productivity and impact`
+  }
 
   return prompt
 }

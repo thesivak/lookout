@@ -39,8 +39,37 @@ export interface GitUser {
  */
 export function getGlobalGitUser(): GitUser {
   try {
+    // Try global config first
     const name = execSync('git config --global user.name', { encoding: 'utf-8' }).trim()
     const email = execSync('git config --global user.email', { encoding: 'utf-8' }).trim()
+    if (name && email) {
+      return { name, email }
+    }
+  } catch {
+    // Global config not available
+  }
+
+  try {
+    // Fallback to system/default config (without --global flag)
+    const name = execSync('git config user.name', { encoding: 'utf-8' }).trim()
+    const email = execSync('git config user.email', { encoding: 'utf-8' }).trim()
+    if (name && email) {
+      return { name, email }
+    }
+  } catch {
+    // No config available
+  }
+
+  return { name: '', email: '' }
+}
+
+/**
+ * Get git user from a specific repository's local config
+ */
+export function getRepoGitUser(repoPath: string): GitUser {
+  try {
+    const name = execSync('git config user.name', { cwd: repoPath, encoding: 'utf-8' }).trim()
+    const email = execSync('git config user.email', { cwd: repoPath, encoding: 'utf-8' }).trim()
     return { name, email }
   } catch {
     return { name: '', email: '' }

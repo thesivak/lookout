@@ -46,22 +46,6 @@ export default function MyWork(): JSX.Element {
     window.api.git.getUser().then(setGitUser)
   }, [])
 
-  // Listen for trigger-generate from tray/shortcuts
-  useEffect(() => {
-    const unsubTrigger = window.api.app.onTriggerGenerate(() => {
-      handleGenerate()
-    })
-
-    const unsubScheduled = window.api.app.onScheduledGeneration(() => {
-      handleGenerate()
-    })
-
-    return () => {
-      unsubTrigger()
-      unsubScheduled()
-    }
-  }, [handleGenerate])
-
   // Set up event listeners for generation progress
   useEffect(() => {
     const unsubProgress = window.api.summaries.onProgress((data) => {
@@ -72,10 +56,10 @@ export default function MyWork(): JSX.Element {
       setStreamingContent((prev) => prev + text)
     })
 
-    const unsubComplete = window.api.summaries.onComplete((summary) => {
+    const unsubComplete = window.api.summaries.onComplete((sum) => {
       setGenerating(false)
       setProgress(null)
-      setSummary(summary)
+      setSummary(sum)
       setStreamingContent('')
     })
 
@@ -111,6 +95,22 @@ export default function MyWork(): JSX.Element {
       authorEmail: gitUser?.email || undefined
     })
   }, [dateRange, template, gitUser, generating])
+
+  // Listen for trigger-generate from tray/shortcuts
+  useEffect(() => {
+    const unsubTrigger = window.api.app.onTriggerGenerate(() => {
+      handleGenerate()
+    })
+
+    const unsubScheduled = window.api.app.onScheduledGeneration(() => {
+      handleGenerate()
+    })
+
+    return () => {
+      unsubTrigger()
+      unsubScheduled()
+    }
+  }, [handleGenerate])
 
   const handleCopy = useCallback(async () => {
     const content = summary?.content || streamingContent
@@ -305,7 +305,19 @@ export default function MyWork(): JSX.Element {
             {/* Actions */}
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div className="text-sm text-muted-foreground">
-                {generating ? 'Generating your summary...' : 'Your work summary'}
+                {generating ? 'Generating your summary...' : (
+                  summary ? (
+                    <>
+                      Summary for{' '}
+                      <span className="font-medium text-foreground">
+                        {summary.date_from === summary.date_to
+                          ? format(new Date(summary.date_from), 'MMM d, yyyy')
+                          : `${format(new Date(summary.date_from), 'MMM d')} - ${format(new Date(summary.date_to), 'MMM d, yyyy')}`
+                        }
+                      </span>
+                    </>
+                  ) : 'Your work summary'
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={handleCopy}>

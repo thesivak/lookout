@@ -64,6 +64,30 @@ export function registerSummaryHandlers(): void {
         return
       }
 
+      // For team summaries, get excluded contributors from contributor profiles
+      let excludedEmails: string[] = []
+      let displayNameMap: Record<string, string> = {}
+      if (type === 'team') {
+        // Get excluded emails from contributor_profiles
+        const excludedRows = db.prepare(`
+          SELECT ce.email
+          FROM contributor_emails ce
+          JOIN contributor_profiles cp ON ce.profile_id = cp.id
+          WHERE cp.is_excluded = 1
+        `).all() as { email: string }[]
+        excludedEmails = excludedRows.map((r) => r.email)
+
+        // Get display name mapping for all profiled contributors
+        const displayNameRows = db.prepare(`
+          SELECT ce.email, cp.display_name
+          FROM contributor_emails ce
+          JOIN contributor_profiles cp ON ce.profile_id = cp.id
+        `).all() as { email: string; display_name: string }[]
+        for (const row of displayNameRows) {
+          displayNameMap[row.email] = row.display_name
+        }
+      }
+
       // Send progress update
       event.sender.send('summaries:generate:progress', {
         stage: 'collecting',
@@ -88,12 +112,19 @@ export function registerSummaryHandlers(): void {
           progress: ((i + 1) / repos.length) * 50
         })
 
-        const commits = await getCommitsWithStats(
+        let commits = await getCommitsWithStats(
           repo.path,
           new Date(dateFrom),
           new Date(dateTo),
           authorEmail
         )
+
+        // Filter out excluded contributors for team summaries
+        if (type === 'team' && excludedEmails.length > 0) {
+          commits = commits.filter(
+            (c) => !excludedEmails.includes(c.authorEmail.toLowerCase())
+          )
+        }
 
         if (commits.length > 0) {
           repoCommits.push({
@@ -121,7 +152,9 @@ export function registerSummaryHandlers(): void {
         repoCommits.map((r) => ({ repoName: r.repoName, commits: r.commits })),
         new Date(dateFrom),
         new Date(dateTo),
-        authorEmail
+        authorEmail,
+        type === 'team', // isTeamSummary
+        displayNameMap // contributor display names
       )
 
       // Send progress update
